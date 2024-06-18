@@ -1,0 +1,49 @@
+.budget-table-container{
+    width:100%;
+    overflow: auto;
+    max-height: 50vh;
+  }
+
+.budgetHeader{
+    font-size: 1rem;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    /* text-align: right; */
+    /* width:fit-content; */
+}
+
+.budgetRow{
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    /* white-space: nowrap;
+    text-overflow: ellipsis; */
+}
+
+.budgetCell{
+    display:inline-block;
+    width:4.5rem;
+    font-size: 1rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    /* text-align: right; */
+}
+
+.label {
+    margin-bottom: 10px;
+  }
+  
+  .budget-input {
+    width:3rem;
+    height:1.5rem;
+    padding:0.2rem;
+    font-size: 1rem;
+    text-align: center;
+  }
+  
+  .budgetRow tr td {
+    white-space: nowrap; /* Prevent content from wrapping */
+    overflow: hidden; /* Hide any content that overflows the cell */
+  }
+  

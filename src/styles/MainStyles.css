@@ -1,0 +1,63 @@
+.menu {
+  position: absolute;
+  right: 0;
+  top: 0;
+}
+
+.work-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  z-index: 9;
+  overflow: hidden;
+}
+
+.container {
+  position: absolute;
+  bottom: 4%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+}
+
+.button_grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(2, 7rem);
+  gap: 5px;
+  right: 0%;
+  bottom: 4%;
+  /* margin-left: 50%; */
+  /* transform: translate(-50%); */
+}
+
+.main_buttons {
+  height: 2rem;
+  width: 6rem;
+  background-color: lightblue;
+  border: 1px solid darkblue;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  cursor: pointer;
+  font-size: 0.9rem;
+  box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
+  white-space: nowrap;
+  padding: 0.3rem;
+}
+
+.main_buttons:disabled {
+  cursor: default;
+}
+
+.delimiterStyle {
+  width: 2rem;
+  font-family: Times New Roman, Times, serif;
+  font-size: 1.25rem;
+  font-weight: bold;
+  text-align: center;
+}

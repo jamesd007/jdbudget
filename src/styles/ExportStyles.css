@@ -1,0 +1,19 @@
+.export-file-content {
+  height: fit-content;
+  max-height: 40vh;
+  width: 90vw;
+  max-width: fit-content;
+  margin-left: 1rem;
+  overflow: auto;
+  font-size: 0.7rem;
+}
+
+.export-work-container {
+  position: absolute;
+  height: calc(96% - 2.5rem);
+  width: 96%;
+  left: 2%;
+  top: calc(2% + 2.5rem);
+  /* border: 1px solid black; */
+  /* tedtest remove this border later (or maybe not?) */
+}
