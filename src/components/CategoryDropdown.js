@@ -1,18 +1,38 @@
 import React, { useEffect, useState } from "react";
 import db from "../store/Dexie";
 import ReportsTable from "./ReportsTable";
+import possHeaders from "../data/possHeaders";
 
 const CategoryDropdown = () => {
   const [categories, setCategories] = useState([]);
-  const [selectedCategory, setSelectedCategory] = useState(null);
+  const [selectedCategory, setSelectedCategory] = useState("");
   const [transactionsFound, setTransactionsFound] = useState([]);
+  const [colWidths, setColWidths] = useState([]);
+  const [headersInfo, setHeadersInfo] = useState([]);
+
+  const createColWidthsArray = (headerArray) => {
+    return headerArray.reduce((acc, header) => {
+      if (header !== "ignore") {
+        const foundHeader = possHeaders.find(
+          (possHeader) => possHeader.title === header
+        );
+        if (foundHeader) {
+          acc.push(foundHeader.colWidth);
+        } else if (header === "") {
+          acc.push("5rem");
+        }
+      }
+      return acc;
+    }, []);
+  };
 
   useEffect(() => {
     const fetchCategories = async () => {
       try {
         const uniqueCategories = await db.transactions
-          .orderBy("category_code")
+          .orderBy("category_description")
           .uniqueKeys();
+        console.log("tedtesta uniquecategories=", uniqueCategories);
         setCategories(uniqueCategories);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
@@ -22,80 +42,25 @@ const CategoryDropdown = () => {
   }, []);
 
   const handleChange = (event) => {
-    setSelectedCategory(Number(event.target.value));
+    setSelectedCategory(event.target.value);
   };
-
-  //   const getTransactionsByCategory = async () => {
-  //     try {
-  //       const transactions = await db.transactions
-  //         .where("category")
-  //         .equalsIgnoreCase(selectedCategory)
-  //         .toArray();
-  //       return transactions;
-  //     } catch (error) {
-  //       console.error("Failed to get transactions: " + error);
-  //     }
-  //   };
-
-  // useEffect(() => {
-  //   const fetchTransactions = async () => {
-  //     try {
-  //       const filteredTransactions = await db.transactions
-  //         .filter((transaction) => {
-  //           console.log("tedtest transaction=", transaction);
-  //           console.log(
-  //             "tedtest transaction.category_code.toString()=",
-  //             transaction.category_code.toString()
-  //           );
-  //           console.log(
-  //             "tedtest selectedCategory.toString()=",
-  //             selectedCategory.toString()
-  //           );
-
-  //           return (
-  //             transaction.category_code.toString() ===
-  //               selectedCategory.toString() ||
-  //             transaction.category_description.toString() ===
-  //               selectedCategory.toString()
-  //           );
-  //         })
-  //         .toArray();
-  //       console.log(
-  //         "tedtest Filtered transactions fetched:",
-  //         filteredTransactions
-  //       );
-  //       // setTransactionsFound(filteredTransactions);
-
-  //       // const allTransactions = await db.transactions.toArray();
-  //       // console.log("All transactions fetched:", allTransactions);
-  //       // setTransactionsFound(allTransactions);
-
-  //       const transactions = await db.transactions
-  //         .where("category_code")
-  //         .equals(selectedCategory)
-  //         .toArray();
-  //       setTransactionsFound(transactions);
-  //     } catch (error) {
-  //       console.error("Failed to get transactions:", error);
-  //     }
-  //   };
-
-  //   if (selectedCategory) {
-  //     console.log("tedtest selectedCategory=", selectedCategory);
-  //     fetchTransactions();
-  //   }
-  // }, [selectedCategory]);
 
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         if (selectedCategory) {
           const transactions = await db.transactions
-            .where("category_code")
-            .equals(parseInt(selectedCategory, 10)) // Ensure category code is a number
+            .where("category_description")
+            .equals(selectedCategory)
             .toArray();
           setTransactionsFound(transactions);
-          console.log("Filtered transactions fetched:", transactions);
+          const keys = new Set();
+          transactions.forEach((item) => {
+            Object.keys(item).forEach((key) => keys.add(key));
+          });
+          // Convert the set to an array and sort the keys as needed
+          setHeadersInfo(Array.from(keys));
+          setColWidths(createColWidthsArray(Array.from(keys)));
         }
       } catch (error) {
         console.error("Failed to get transactions:", error);
@@ -107,7 +72,7 @@ const CategoryDropdown = () => {
 
   return (
     <div>
-      <select value={selectedCategory || -1} onChange={handleChange}>
+      <select value={selectedCategory || ""} onChange={(e) => handleChange(e)}>
         <option value="" disabled>
           Select a category
         </option>
@@ -118,7 +83,11 @@ const CategoryDropdown = () => {
         ))}
       </select>
       {transactionsFound ? (
-        <ReportsTable allTrans={transactionsFound} />
+        <ReportsTable
+          allTrans={transactionsFound}
+          colWidthArr={colWidths}
+          headers={headersInfo}
+        />
       ) : (
         <p>no data found</p>
       )}

@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useState } from "react";
 import "../styles/MainStyles.css";
-import ExportData from "./ExportData";
+import BudgetNew from "./BudgetNew";
 import DropdownMenu from "../utils/DropDownMenu";
 import { FaFileImport } from "react-icons/fa";
 import { FaFileExport } from "react-icons/fa";
@@ -13,54 +13,43 @@ import { BiSolidCategoryAlt } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
 import { menuMainItems } from "../data/MenuMainItems";
 import { useDataContext } from "../providers/DataProvider";
-import EditData from "./EditData";
-import ImportDataNew from "./ImportDataNew";
-import CatEdit from "./CatEdit";
+import DailyBudget from "./DailyBudget";
 
-const Transactions = () => {
-  const [importOption, setImportOption] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [exportOption, setExportOption] = useState(false);
-  const [openTransactionsMenu, setOpenTransactionsMenu] = useState(true);
+const BudgetMenus = () => {
+  const [calendarOption, setCalendarOption] = useState(false);
+  const [dailyBudgetOption, setDailyBudgetOption] = useState(false);
+  const [monthlyBudgetOption, setMonthlyBudgetOption] = useState(true);
+  const [otherOption, setOtherOption] = useState(true);
   const [showDots, setShowDots] = useState(true);
   const navigate = useNavigate();
-  const [catEdit, setCatEdit] = useState(false);
-  // const { open, setOpen } = useDataContext();
 
-  const handleImport = () => {
-    setImportOption(true);
-    setOpenTransactionsMenu(false);
-    setEditing(false);
-    setExportOption(false);
-    setCatEdit(false);
+  const handleTestCalendar = () => {
+    setCalendarOption(true);
+    setMonthlyBudgetOption(false);
+    setDailyBudgetOption(false);
+    setOtherOption(false);
   };
 
-  const handleEdit = () => {
-    setEditing(true);
-    setOpenTransactionsMenu(false);
-    setImportOption(false);
-    setExportOption(false);
-    setCatEdit(false);
+  const handleDailyBudget = () => {
+    setDailyBudgetOption(true);
+    setMonthlyBudgetOption(false);
+    setCalendarOption(false);
+    setOtherOption(false);
   };
 
-  const handleCategories = () => {
-    setEditing(false);
-    setOpenTransactionsMenu(false);
-    setImportOption(false);
-    setExportOption(false);
-    setCatEdit(true);
+  const handleMonthlyBudget = () => {
+    setDailyBudgetOption(false);
+    setMonthlyBudgetOption(false);
+    setCalendarOption(false);
+    setOtherOption(false);
   };
 
-  const handleExport = () => {
-    setExportOption(true);
-    setOpenTransactionsMenu(false);
-    setEditing(false);
-    setImportOption(false);
-    setCatEdit(false);
+  const handleOther = () => {
+    setOtherOption(true);
+    setMonthlyBudgetOption(false);
+    setDailyBudgetOption(false);
+    setCalendarOption(false);
   };
-
-  // const handleSave = () => {
-  // };
 
   const handleClose = () => {
     navigate("/");
@@ -69,29 +58,29 @@ const Transactions = () => {
   const menuItems = [
     {
       leftIcon: <FaFileImport size={24} />,
-      text: "Import",
-      callback: handleImport,
+      text: "Test calendar",
+      callback: handleTestCalendar,
       permissionLevels: ["any"],
       goToMenu: "",
     },
     {
       leftIcon: <FaRegEdit size={24} />,
-      text: "Edit",
-      callback: handleEdit,
+      text: "Daily budget",
+      callback: handleDailyBudget,
       permissionLevels: ["any"],
       goToMenu: "",
     },
     {
       leftIcon: <FaFileExport size={24} />,
-      text: "Export",
-      callback: handleExport,
+      text: "Monthly budget",
+      callback: handleMonthlyBudget,
       permissionLevels: ["any"],
       goToMenu: "",
     },
     {
       leftIcon: <BiSolidCategoryAlt size={24} />,
-      text: "Categories",
-      callback: handleCategories,
+      text: "Other",
+      callback: handleOther,
       permissionLevels: ["any"],
       goToMenu: "",
     },
@@ -112,7 +101,7 @@ const Transactions = () => {
   ];
 
   const handleMenuClick = () => {
-    setOpenTransactionsMenu((prevOpen) => !prevOpen);
+    setMonthlyBudgetOption((prevOpen) => !prevOpen);
   };
 
   return (
@@ -122,14 +111,14 @@ const Transactions = () => {
           <span style={showDots ? {} : { display: "none" }}>
             <BsThreeDotsVertical size={28} onClick={() => handleMenuClick()} />
           </span>
-          {openTransactionsMenu && (
+          {monthlyBudgetOption && (
             <DropdownMenu
               type="items"
               secType="links"
               roles={"any"}
               menuItems={menuItems}
               secMenuItem={menuMainItems}
-              onClose={() => setOpenTransactionsMenu(false)}
+              onClose={() => setMonthlyBudgetOption(false)}
               mainscreen={true}
             />
           )}
@@ -141,43 +130,41 @@ const Transactions = () => {
           backgroundColor: "lightsteelblue",
         }}
       >
-        <span style={{ fontSize: "2rem", marginLeft: "1rem" }}>
-          Transactions
-        </span>
-        {importOption && (
+        <span style={{ fontSize: "2rem", marginLeft: "1rem" }}>Budgets</span>
+        {calendarOption && (
           <>
             <span
               style={{
                 fontSize: "1.5rem",
-                display: importOption ? {} : "none",
+                display: calendarOption ? {} : "none",
               }}
             >
               {" "}
-              - Import
+              - Calendar
             </span>
-            <ImportDataNew />
+            <DailyBudget />
           </>
         )}
-        {editing && (
+        {dailyBudgetOption && (
           <>
             <span
               style={{
                 fontSize: "1.5rem",
-                display: editing ? {} : "none",
+                display: dailyBudgetOption ? {} : "none",
               }}
             >
               {" "}
               - Edit
             </span>
-            <EditData />
+            <BudgetNew />
           </>
         )}
-        {exportOption && (
+        {/* {otherOption && (
           <>
             <span
               style={{
                 fontSize: "1.5rem",
-                display: exportOption ? {} : "none",
+                display: otherOption ? {} : "none",
               }}
             >
               {" "}
@@ -199,10 +186,10 @@ const Transactions = () => {
             </span>
             <CatEdit />
           </>
-        )}
+        )} */}
       </div>
     </div>
   );
 };
 
-export default Transactions;
+export default BudgetMenus;

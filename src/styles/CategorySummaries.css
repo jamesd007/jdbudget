@@ -1,0 +1,25 @@
+.table-container {
+  max-height: 80vh; /* Adjust the height as needed */
+  overflow-y: auto;
+  height: fit-content;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background: white;
+  z-index: 1;
+  border-bottom: 2px solid #ccc;
+}
+
+th,
+td {
+  /* padding: 8px; */
+  text-align: left;
+  border: 1px solid #ccc;
+}

@@ -2,8 +2,6 @@ import React from "react";
 import "../styles/MainStyles.css";
 import { Routes, Route } from "react-router-dom";
 import Budget from "./Budget";
-import ImportData from "./ImportData";
-// import ExportData from "./ExportData";
 import Analysis from "./Analysis";
 import Reports from "./Reports";
 import System from "./System";
@@ -12,6 +10,7 @@ import Home from "./Home";
 import MenuComponent from "./MenuComponent";
 import Transactions from "./Transactions";
 import { DataProvider } from "../providers/DataProvider";
+import BudgetMenu from "./BudgetMenu";
 
 function FrontPage() {
   return (
@@ -22,10 +21,8 @@ function FrontPage() {
       <DataProvider>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/budget" element={<Budget />} />
+          <Route path="/budget" element={<BudgetMenu />} />
           <Route path="/transactions" element={<Transactions />} />
-          {/* <Route path="/importdata" element={<ImportData />} />
-          <Route path="/exportdata" element={<ExportData />} /> */}
           <Route path="/analysis" element={<Analysis />} />
           <Route path="/reports" element={<Reports />} />
           <Route path="/system" element={<System />} />

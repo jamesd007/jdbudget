@@ -34,6 +34,7 @@ const ExportData = () => {
         .where("date")
         .between(isoStartDate, isoEndDate, true, true)
         .toArray();
+      console.log("tedtestQ transactions=", transactions);
       const transForExport = transactions.map((transaction) => {
         return {
           ...transaction,
@@ -139,7 +140,7 @@ const ExportData = () => {
         {/* <Typography variant="h4" gutterBottom>
           Export Data by Date Range
         </Typography> */}
-        <DateRangePicker onExport={getDataForExport} />
+        <DateRangePicker onGetData={getDataForExport} />
       </Container>
       {transactionsForExport && (
         <div>

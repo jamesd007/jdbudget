@@ -107,18 +107,6 @@ const MenuComponent = (props) => {
       icon: <GrTransaction size={24} />,
       cName: "main-menu-text",
     },
-    // {
-    //   title: "Import",
-    //   url: "/importdata",
-    //   icon: <FaFileImport size={24} />,
-    //   cName: "main-menu-text",
-    // },
-    // {
-    //   title: "Export",
-    //   url: "/exportdata",
-    //   icon: <FaFileExport size={24} />,
-    //   cName: "main-menu-text",
-    // },
     {
       title: "Analysis",
       url: "/analysis",

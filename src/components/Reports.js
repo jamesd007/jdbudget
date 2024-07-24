@@ -17,6 +17,9 @@ import { BsThreeDotsVertical } from "react-icons/bs";
 import DropdownMenu from "../utils/DropDownMenu";
 import { useNavigate } from "react-router-dom";
 import CategoryDropdown from "./CategoryDropdown";
+import CategorySummaries from "./CategorySummaries";
+import possHeaders from "../data/possHeaders";
+import { getDatabaseSize } from "../store/Dexie";
 
 const Reports = () => {
   const [allTrans, setAllTrans] = useState([]);
@@ -26,7 +29,16 @@ const Reports = () => {
   const [databaseOption, setDatabaseOption] = useState(false);
   const [timePeriodOption, setTimePeriodOption] = useState(false);
   const [categoryOption, setCategoryOption] = useState(false);
+  const [categorySummaryOption, setCategorySummaryOption] = useState(false);
+  const [colWidths, setColWidths] = useState([]);
+  const [headersInfo, setHeadersInfo] = useState([]);
   const navigate = useNavigate();
+
+  useEffect(() => {
+    getDatabaseSize().then((size) => {
+      console.log(`Database size: ${size} bytes`);
+    });
+  }, []);
 
   const handleMenuClick = () => {
     setOpenReportsMenu((prevOpen) => !prevOpen);
@@ -37,6 +49,7 @@ const Reports = () => {
     setDatabaseOption(true);
     setTimePeriodOption(false);
     setCategoryOption(false);
+    setCategorySummaryOption(false);
   };
 
   const handleDataForTimePeriod = () => {
@@ -44,6 +57,7 @@ const Reports = () => {
     setTimePeriodOption(true);
     setDatabaseOption(false);
     setCategoryOption(false);
+    setCategorySummaryOption(false);
   };
 
   const handleCategoryReport = () => {
@@ -51,6 +65,15 @@ const Reports = () => {
     setDatabaseOption(false);
     setTimePeriodOption(false);
     setCategoryOption(true);
+    setCategorySummaryOption(false);
+  };
+
+  const handleCategorySummariesReport = () => {
+    setOpenReportsMenu(false);
+    setDatabaseOption(false);
+    setTimePeriodOption(false);
+    setCategoryOption(false);
+    setCategorySummaryOption(true);
   };
 
   const handleDescriptionReport = () => {
@@ -58,16 +81,35 @@ const Reports = () => {
     setDatabaseOption(false);
     setTimePeriodOption(false);
     setCategoryOption(false);
+    setCategorySummaryOption(false);
   };
 
   const handleBudgetComparisonReport = () => {
     setOpenReportsMenu(false);
     setDatabaseOption(false);
     setTimePeriodOption(false);
+    setCategoryOption(false);
+    setCategorySummaryOption(false);
   };
 
   const handleClose = () => {
     navigate("/");
+  };
+
+  const createColWidthsArray = (headerArray) => {
+    return headerArray.reduce((acc, header) => {
+      if (header !== "ignore") {
+        const foundHeader = possHeaders.find(
+          (possHeader) => possHeader.title === header
+        );
+        if (foundHeader) {
+          acc.push(foundHeader.colWidth);
+        } else if (header === "") {
+          acc.push("5rem");
+        }
+      }
+      return acc;
+    }, []);
   };
 
   const menuItems = [
@@ -89,6 +131,13 @@ const Reports = () => {
       leftIcon: <BiSolidCategoryAlt size={24} />,
       text: "Category",
       callback: handleCategoryReport,
+      permissionLevels: ["any"],
+      goToMenu: "",
+    },
+    {
+      leftIcon: <BiSolidCategoryAlt size={24} />,
+      text: "Category summaries",
+      callback: handleCategorySummariesReport,
       permissionLevels: ["any"],
       goToMenu: "",
     },
@@ -128,6 +177,13 @@ const Reports = () => {
         const transactions = await getAllTransactions();
         setAllTrans(transactions);
         console.log("Fetched transactions:", transactions);
+        const keys = new Set();
+        transactions.forEach((item) => {
+          Object.keys(item).forEach((key) => keys.add(key));
+        });
+        // Convert the set to an array and sort the keys as needed
+        setHeadersInfo(Array.from(keys));
+        setColWidths(createColWidthsArray(Array.from(keys)));
       } catch (error) {
         console.error("Error retrieving transactions:", error);
       }
@@ -220,13 +276,17 @@ const Reports = () => {
             <span
               style={{
                 fontSize: "1.5rem",
-                display: databaseOption ? {} : "none",
+                // display: databaseOption ? {} : "none",
               }}
             >
               {" "}
               - Database report
             </span>
-            <ReportsTable allTrans={allTrans} />
+            <ReportsTable
+              allTrans={allTrans}
+              colWidthArr={colWidths}
+              headers={headersInfo}
+            />
           </>
         )}
         {timePeriodOption && (
@@ -234,7 +294,7 @@ const Reports = () => {
             <span
               style={{
                 fontSize: "1.5rem",
-                display: timePeriodOption ? {} : "none",
+                // display: timePeriodOption ? {} : "none",
               }}
             >
               {" "}
@@ -242,9 +302,13 @@ const Reports = () => {
             </span>
             <div>
               <Container>
-                <DateRangePicker onExport={dataForTimePeriod} />
+                <DateRangePicker onGetData={dataForTimePeriod} />
               </Container>
-              <ReportsTable allTrans={datesData} />
+              <ReportsTable
+                allTrans={datesData}
+                colWidthArr={colWidths}
+                headers={headersInfo}
+              />
             </div>
           </>
         )}
@@ -253,7 +317,7 @@ const Reports = () => {
             <span
               style={{
                 fontSize: "1.5rem",
-                display: categoryOption ? {} : "none",
+                // display: categoryOption ? {} : "none",
               }}
             >
               {" "}
@@ -262,7 +326,19 @@ const Reports = () => {
             <CategoryDropdown />
           </>
         )}
-        {}
+        {categorySummaryOption && (
+          <>
+            <span
+              style={{
+                fontSize: "1.5rem",
+              }}
+            >
+              {" "}
+              - Category summaries
+            </span>
+            <CategorySummaries />
+          </>
+        )}
       </div>
     </div>
   );

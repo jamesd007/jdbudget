@@ -21,7 +21,6 @@ const CheckboxTable = (props) => {
     setScrollPosition,
   } = useDataContext();
   const tableRef = useRef(null);
-  console.log("tedtestE props =", props);
   const handleCheckboxChange = useCallback(
     (event, id) => {
       const isChecked = event.target.checked;
@@ -127,7 +126,6 @@ const CheckboxTable = (props) => {
           )}
           <tbody>
             {props.lines?.map((item, index) => {
-              console.log("tedtestZ item=", item, " index=", index);
               return (
                 <tr key={index}>
                   <td
@@ -150,7 +148,6 @@ const CheckboxTable = (props) => {
                     {props.array &&
                       item?.data?.split(",").map(
                         (itemField, indexItem) =>
-                          // console.log("tedtest item.data=", item.data);
                           !isColumnIgnored(editableHeaders[indexItem]) && (
                             <span key={indexItem} className="ellipsis">
                               {itemField}

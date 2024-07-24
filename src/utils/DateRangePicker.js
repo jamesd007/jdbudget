@@ -5,13 +5,13 @@ import { Box, Button, TextField } from "@mui/material";
 import { LocalizationProvider, DatePicker } from "@mui/x-date-pickers";
 import { AdapterDateFns } from "@mui/x-date-pickers/AdapterDateFns";
 
-const DateRangePicker = ({ onExport }) => {
+const DateRangePicker = ({ onGetData }) => {
   const [startDate, setStartDate] = useState(new Date(2024, 2, 1));
   const [endDate, setEndDate] = useState(new Date());
 
-  const handleExport = () => {
+  const handleGetData = () => {
     if (startDate && endDate) {
-      onExport(startDate, endDate);
+      onGetData(startDate, endDate);
     } else {
       alert("Please select both start and end dates.");
     }
@@ -37,7 +37,7 @@ const DateRangePicker = ({ onExport }) => {
             renderInput={(params) => <TextField {...params} />}
             // maxDate={new Date()}
           />
-          <Button variant="contained" onClick={handleExport}>
+          <Button variant="contained" onClick={handleGetData}>
             Get Data
           </Button>
         </Box>

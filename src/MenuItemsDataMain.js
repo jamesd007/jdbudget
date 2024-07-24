@@ -21,7 +21,7 @@ export const menuItemsDataMain = [
   },
   {
     title: "Import",
-    url: "/importdata",
+    url: "/importdatanew",
     icon: <FaFileImport size={24} />,
     cName: "nav-text",
   },

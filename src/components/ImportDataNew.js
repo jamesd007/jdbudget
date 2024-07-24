@@ -5,26 +5,16 @@ import Modals from "../utils/Modals";
 import "../styles/Modals.css";
 import "../styles/ImportData.css";
 import CheckboxTable from "../utils/CheckBoxTable";
-import { FaRegSave } from "react-icons/fa";
-import { FaRegTrashAlt } from "react-icons/fa";
-import { FaInfoCircle } from "react-icons/fa";
+import {
+  FaBalanceScaleLeft,
+  FaInfoCircle,
+  FaRegSave,
+  FaRegTrashAlt,
+} from "react-icons/fa";
+import EditTableNew from "../utils/EditTableNew";
 import { parse, formatISO, isValid, set } from "date-fns";
-
-// get file data (tick)
-
-// get headers (tick)
-// get for open and close balances (tick)
-// get account id (tick)
-
-// does account exist on dbase?
-// yes:get close bal from dbase & check open balance against database close balance
-//if they are equal
-//add transactions to dbase
-//if not equal
-//ask user to proceed or not
-//proceed:add transactions to dbase
-//not:do nothing
-// no:ask user for open balance, then add transactions to dbase
+import { updateTransaction } from "../store/Dexie";
+import possHeaders from "../data/possHeaders";
 
 const ImportDataNew = (props) => {
   const [openBalance, setOpenBalance] = useState(0);
@@ -39,6 +29,19 @@ const ImportDataNew = (props) => {
   const [confirmations, setConfirmations] = useState(false);
   const [balanceUnequal, setBalanceUnequal] = useState(false);
   const [dbaseBalance, setdbaseBalance] = useState(0);
+  const [modalGone, setModalGone] = useState(false);
+  const [dataSaved, setDataSaved] = useState(false);
+  const [loadedIds, setLoadedIds] = useState([]);
+  const [loadedTransactions, setLoadedTransactions] = useState([]);
+  const [checkedTransactions, setCheckedTransactions] = useState([]);
+  const [editedTrans, setEditedTrans] = useState([]);
+  const [originalValue, setOriginalValue] = useState({});
+  const [uniqueKeys, setUniqueKeys] = useState([]);
+  const [colWidths, setColWidths] = useState([]);
+  const [selectedEditCatCheckboxes, setSelectedEditCatCheckboxes] = useState(
+    []
+  );
+  const [fixOpenBal, setFixOpenBal] = useState(false);
   let countRecords = 0;
   let countDuplicates = 0;
   const iconSize = 20;
@@ -55,25 +58,28 @@ const ImportDataNew = (props) => {
     setSelectedCheckboxes,
   } = useDataContext();
 
-  const possHeaders = [
-    { title: "ignore", colWidth: "0rem" },
-    { title: "account", colWidth: "5rem" }, //tedtest is this used?
-    { title: "account_id", colWidth: "5rem" },
-    { title: "amount1", colWidth: "5rem" },
-    { title: "amount2", colWidth: "5rem" },
-    { title: "balance", colWidth: "5rem" },
-    { title: "bank_code", colWidth: "2rem" },
-    { title: "category_code", colWidth: "8rem" },
-    { title: "category_description", colWidth: "10rem" },
-    { title: "date", colWidth: "4rem" },
-    { title: "day", colWidth: "2rem" },
-    { title: "description", colWidth: "10rem" },
-    { title: "extra", colWidth: "5rem" },
-    // { title: "headers", colWidth: "5rem" }, //tedtest I don't thinl this should be here
-    { title: "type", colWidth: "10rem" },
+  const cantEditArray = [
+    "ignore",
+    "account",
+    "account_id",
+    "amount1",
+    "amount2",
+    "balance",
+    "bank_code",
+    "category_code",
+    "date",
+    "day",
+    "description",
+    "extra",
+    "type",
+    "timestamp",
+    "id",
   ];
   const defaultWidth = "5rem";
   const dateFormats = [
+    "dd-MMM-yy",
+    "dd MMM yy",
+    "yyyy-MMM-dd",
     "ddMMyyyy",
     "MM/dd/yyyy",
     "yyyy-MM-dd",
@@ -88,7 +94,6 @@ const ImportDataNew = (props) => {
     "dd-MM-yy",
     "d MMM yyyy",
     "d MMM yy",
-    "dd MMM yy",
   ];
 
   const showInfoHeaders = () => {
@@ -168,11 +173,20 @@ const ImportDataNew = (props) => {
     dateString = preprocessDateString(dateString);
     for (let formatString of dateFormats) {
       try {
+        console.log("tedtestQQQ dateString=", dateString);
+        console.log("tedtestQQQ formatString=", formatString);
+
         const parsedDate = parse(dateString, formatString, new Date());
+        console.log("tedtestQQ parsedDate=", parsedDate);
         if (isValid(parsedDate)) {
+          console.log("tedtestQQ parsedDate is valid");
           const isoDate = formatISO(parsedDate, { representation: "date" });
           // const isoDate = parsedDate.
           // toISOString(); // Full ISO date-time string
+          console.log(
+            `tedtestQQ Successfully parsed with format ${formatString}:`,
+            isoDate
+          );
           console.log(
             `Successfully parsed with format ${formatString}:`,
             isoDate
@@ -237,7 +251,10 @@ const ImportDataNew = (props) => {
             onChange={handleFileChange}
             style={{ display: "none" }}
           />
-          <button onClick={handleButtonClick}>Select File</button>
+          {(!loadedTransactions || loadedTransactions?.length <= 0) &&
+            !dataSaved && (
+              <button onClick={handleButtonClick}>Select File</button>
+            )}
           {selectedFile && (
             <span style={{ fontSize: "0.9rem" }}> {selectedFile.name}</span>
           )}
@@ -360,57 +377,24 @@ const ImportDataNew = (props) => {
         );
         if (foundHeader) {
           acc.push(foundHeader.colWidth);
+        } else if (header === "") {
+          acc.push("5rem");
         }
       }
       return acc;
     }, []);
-    // return editableHeaders.reduce((acc, header) => {
-    //   if (header !== "ignore") {
-    //     const foundHeader = possHeaders.find(
-    //       (possHeader) => possHeader.title === header
-    //     );
-    //     if (foundHeader) {
-    //       acc.push(foundHeader.colWidth);
-    //     }
-    //   }
-    //   return acc;
-    // }, []);
   };
-
-  useEffect(() => {
-    console.log("tedtestZZ Lines=", lines);
-  }, [lines]);
 
   const DisplayLinesData = () => {
     let tempArr = editableHeaders.filter((item) => item !== "ignore");
-    if (!tempArr.includes("category_description")) {
-      tempArr.push("category_description");
-    }
-    const modifiedLines = lines.map((line) => {
-      return {
-        ...line,
-        data: line.data.replace(/\r$/, ",test\r"),
-      };
-    });
-    console.log("tedtestZZ modifiedLines=", modifiedLines);
-    // setLines(modifiedLines);
     return (
       <div style={{ marginBottom: "0.5rem" }}>
         <CheckboxTable
-          lines={modifiedLines}
+          lines={lines}
           array={true}
           objects={false}
           // colWidth="5rem"
           colWidthArr={createColWidthsArray(tempArr)}
-          // {[
-          //   "4rem",
-          //   "4.5rem",
-          //   "10rem",
-          //   "10rem",
-          //   "8rem",
-          //   "10rem",
-          //   "5rem",
-          // ]}
           headers={tempArr}
         />
       </div>
@@ -501,6 +485,22 @@ const ImportDataNew = (props) => {
     }
   };
 
+  const handleEditCatDelete = () => {
+    if (selectedEditCatCheckboxes?.length > 0) {
+      const newLines = lines.filter(
+        (_, index) => !selectedEditCatCheckboxes.includes(index)
+      );
+      // Update the id fields to be sequential
+      const updatedLines = newLines.map((item, index) => ({
+        ...item,
+        id: index, // Reassign ids to be sequential
+      }));
+      // Update the state with the new array and clear selected checkboxes
+      // setLines(updatedLines);
+      setSelectedEditCatCheckboxes([]);
+    }
+  };
+
   async function getLatestBalance(accountID) {
     try {
       const transactions = await db.transactions
@@ -516,7 +516,6 @@ const ImportDataNew = (props) => {
       const latestTransaction = transactions.sort(
         (a, b) => new Date(b.timestamp) - new Date(a.timestamp)
       )[0];
-      console.log("tedtest latestTransaction=", latestTransaction);
       return latestTransaction ? latestTransaction.balance : 0;
     } catch (error) {
       console.error("Error fetching transactions:", error);
@@ -524,12 +523,26 @@ const ImportDataNew = (props) => {
     }
   }
 
+  const checkClosingBalances = () => {
+    //we need the closeBal and we need to calculate the closingBalance so we need transactions with the amounts
+    let checkBal = getLatestBalance(accountID);
+    if (checkBal !== closeBalance) {
+      alert(
+        "Closing balance on import file does not match latestBalance on database. You will need to check your records"
+      );
+    } else {
+      alert(
+        "Closing balance on import file matchex latestBalance on database."
+      );
+    }
+  };
+
   // check for Opening balance on Database
   useEffect(() => {
     const checkOpeningBalanceDatabase = async () => {
+      console.log("tedtestQ checkOpenBalanceDatabase");
       let accountPresent = await accountExists(accountID);
       if (accountPresent) {
-        console.log("tedtestCan this be happeneing 1");
         //tedtest this still to be tested
         let databaseClosingBalance = await getLatestBalance(accountID);
         databaseClosingBalance = parseFloat(
@@ -549,27 +562,30 @@ const ImportDataNew = (props) => {
         else setNewOpenBalance(openBalance);
       }
     };
-    if (!openBalance || !accountID || !editableHeaders) return;
+    console.log(
+      "tedtestQ is this happening??? openBalance=",
+      openBalance,
+      "  accountID=",
+      accountID,
+      "  editableHeaders=",
+      editableHeaders
+    );
+    if (!accountID) return;
+    //  !openBalance || || !editableHeaders) return;
     checkOpeningBalanceDatabase();
   }, [openBalance, accountID]);
 
   const addNewTransactions = async (newTransactions) => {
     let closingBalance;
+    let idArr = [];
     let accountPresent = await accountExists(accountID);
     if (accountPresent) {
-      console.log("tedtestCan this be happeneing 2");
       closingBalance = await getLatestBalance(accountID);
     } else {
-      console.log(
-        "tedtestCan this be happeneing 3 typeof newOpenBalance=",
-        typeof newOpenBalance
-      );
       if (typeof newOpenBalance === "string")
         closingBalance = parseFloat(parseFloat(newOpenBalance).toFixed(2));
       else closingBalance = newOpenBalance;
     }
-    console.log("tedtestT first typeof closingBalance=", typeof closingBalance);
-    console.log("tedtestT first closingBalance=", closingBalance);
     for (const transaction of newTransactions) {
       transaction.account_id = accountID;
       // Skip transactions with invalid dates
@@ -587,63 +603,84 @@ const ImportDataNew = (props) => {
           transaction.date = parsed;
         }
       }
-      if (transaction.amount1) {
+      //check for existence of amount2
+      let twoCols = false;
+      if (editableHeaders.includes("amount2")) twoCols = true;
+      if (!twoCols) {
         transaction.amount1 = parseFloat(transaction.amount1).toFixed(2);
         if (isNaN(transaction.amount1)) {
           transaction.amount1 = 0;
-          // throw new Error(`Invalid amount format: ${transaction.amount1}`);
         }
-      }
-      if (transaction.amount2) {
-        transaction.amount2 = parseFloat(transaction.amount2).toFixed(2);
-        if (isNaN(transaction.amount2)) {
-          transaction.amount2 = 0;
-          // throw new Error(`Invalid amount format: ${transaction.amount1}`);
-        }
-      }
-      if (transaction.amount1 && !transaction.amount2) {
         if (transaction.amount1 < 0) {
           transaction.amount1 = -1 * transaction.amount1;
           transaction.amount2 = 0;
         } else {
-          transaction.amount2 = parseFloat(transaction.amount1).toFixed(2);
+          transaction.amount2 = transaction.amount1;
           transaction.amount1 = 0;
         }
+      } else {
+        transaction.amount1 = parseFloat(transaction.amount1).toFixed(2);
+        if (isNaN(transaction.amount1)) {
+          transaction.amount1 = 0;
+        }
+        transaction.amount2 = parseFloat(transaction.amount2).toFixed(2);
+        if (isNaN(transaction.amount2)) {
+          transaction.amount2 = 0;
+        }
       }
-      const amount1 =
-        transaction.amount1 < 0 ? -transaction.amount1 : transaction.amount1;
-      const amount2 = transaction.amount2;
       // Find a duplicate record based on the given criteria
       const duplicate = await db.transactions
         .where({
           date: transaction.date,
           description: transaction.description,
-          amount1: amount1,
-          amount2: amount1 === transaction.amount1 ? amount2 : 0,
+          amount1: transaction.amount1,
+          amount2: transaction.amount2,
         })
         .first();
       // If no duplicate found, add the transaction
-      if (!duplicate) {
-        transaction.timestamp = new Date().toISOString();
-        console.log("tedtestT transaction.amount1=", transaction.amount1);
-        console.log("tedtestT transaction.amount2=", transaction.amount2);
-        let transactionAmount = transaction.amount2 - transaction.amount1;
-        console.log("tedtestT transactionAmount=", transactionAmount);
-        console.log("tedtestT BEFORE closingBalance=", closingBalance);
-        console.log("tedtestT typeof closingBalance=", typeof closingBalance);
-        console.log(
-          "tedtestT typeof transactionAmount=",
-          typeof transactionAmount
+      let toBeAdded = true;
+      if (duplicate) {
+        console.log("tedtestQ duplicate: transaction=", transaction);
+        toBeAdded = window.confirm(
+          transaction.date +
+            "  " +
+            transaction.description +
+            "transaction looks like duplicate- confirm add to database?"
         );
+      }
+      if (toBeAdded) {
+        //look through category_descriptions table, if transaction.description does not exist
+        //add transaction.description, transaction.category_code,transaction.category_description
+        if (
+          transaction.category_description &&
+          transaction.category_description?.length > 0
+        ) {
+          let existingCategory = await db.category_descriptions
+            .where("description")
+            .equals(transaction.description)
+            .first();
+          if (!existingCategory) {
+            await db.category_descriptions.add({
+              description: transaction.description,
+              category_code: transaction.category_code || "",
+              category_description: transaction.category_description || "",
+            });
+          }
+        }
+        // if (!duplicate) {
+        transaction.timestamp = new Date().toISOString();
+        let transactionAmount = transaction.amount2 - transaction.amount1;
         closingBalance = parseFloat(
           (closingBalance + transactionAmount).toFixed(2)
         );
-        console.log("tedtestT AFTER closingBalance=", closingBalance);
         transaction.balance = closingBalance;
         countRecords++;
-        await db.transactions.add(transaction);
+        let id = await db.transactions.add(transaction);
+        idArr.push(id);
       } else countDuplicates++;
     }
+    setLoadedIds(idArr); //tedtest not used myabe useful ?? leave in or take out??
+    checkClosingBalances();
   };
 
   const isValidHdrs = editableHeaders.some(
@@ -781,6 +818,21 @@ const ImportDataNew = (props) => {
     }
     if (isValidHdrs && proceed) {
       const processedData = processData();
+      //tedtest for each record in processeddata check if it hs category_description
+      //if not, look in table category_description for a record with description===processedData's description
+      //if found, add field and field details to processedData
+      processedData.map((item) => {
+        if (!item.category_description) {
+          db.category_descriptions
+            .where({ description: item.description })
+            .first()
+            .then((result) => {
+              if (result) {
+                item.category_description = result.category_description;
+              }
+            });
+        }
+      });
       addNewTransactions(processedData)
         .then(() => {
           alert(
@@ -790,6 +842,7 @@ const ImportDataNew = (props) => {
               countDuplicates +
               " records duplicated"
           );
+          setDataSaved(true);
           reInitialise();
         })
         .catch((error) => {
@@ -799,12 +852,87 @@ const ImportDataNew = (props) => {
     } else alert("Invalid headers. Please select valid headers.");
   };
 
+  const handleEditCatSave = () => {};
+
+  useEffect(() => {
+    if (dataSaved) {
+      // Async function to fetch the filtered transactions
+      const fetchEmptyCategoryDescriptions = async () => {
+        try {
+          // Fetch transactions where category_description is missing or empty and newly loaded transactions
+          const tempArr = await db.transactions
+            .filter(
+              (item) =>
+                // loadedIds.includes(item.id) ||
+                !item.category_description ||
+                item.category_description.length === 0
+            )
+            .toArray();
+          setLoadedTransactions(tempArr);
+          const keys = new Set();
+          tempArr.forEach((item) => {
+            Object.keys(item).forEach((key) => keys.add(key));
+          });
+          if (!keys.has("category_description")) {
+            keys.add("category_description");
+          }
+          // Convert the set to an array and sort the keys as needed
+          const orderedKeys = Array.from(keys);
+
+          // Specify the keys to appear first
+          const predefinedOrder = [
+            "id",
+            "date",
+            "type",
+            "description",
+            "category_description",
+            "amount1",
+            "amount2",
+            "balance",
+          ];
+
+          // Sort the keys based on predefined order and then alphabetically
+          orderedKeys.sort((a, b) => {
+            const indexA = predefinedOrder.indexOf(a);
+            const indexB = predefinedOrder.indexOf(b);
+
+            if (indexA === -1 && indexB === -1) {
+              // Both keys are not in the predefined order, sort alphabetically
+              return a.localeCompare(b);
+            }
+            if (indexA === -1) {
+              // Only a is not in the predefined order, so b should come first
+              return 1;
+            }
+            if (indexB === -1) {
+              // Only b is not in the predefined order, so a should come first
+              return -1;
+            }
+            // Both keys are in the predefined order, sort by predefined order
+            return indexA - indexB;
+          });
+
+          setUniqueKeys(orderedKeys);
+          setColWidths(createColWidthsArray(orderedKeys));
+        } catch (error) {
+          console.error("Error fetching transactions:", error);
+        }
+      };
+
+      fetchEmptyCategoryDescriptions();
+    } else {
+      console.log("dataSaved is not yet true");
+    }
+  }, [dataSaved]);
+
   const handleClickOutside = () => {
+    setModalGone(true);
     setNoOpenBalance(false);
     setBalanceUnequal(false);
   };
 
   const handleSubmit = (newBal) => {
+    setModalGone(false);
     setNoOpenBalance(false);
     setBalanceUnequal(false);
     setNewOpenBalance(newBal);
@@ -825,6 +953,49 @@ const ImportDataNew = (props) => {
     if (event.key === "Enter") {
       handleSubmit(newOpenBalance);
     }
+  };
+
+  const handleClose = () => {
+    setModalGone(true);
+    if (noOpenBalance) setNoOpenBalance(false);
+    else if (balanceUnequal) setBalanceUnequal(false);
+  };
+
+  const handleBlur = async (e, index, updatedTransactions, key) => {
+    const item = updatedTransactions[index];
+    if (originalValue[index] && originalValue[index][key] !== item[key]) {
+      console.log(`Field ${key} for item ${index} was changed`);
+      await updateTransaction(item.id, { [key]: item[key] });
+      try {
+        await db.category_descriptions.add({
+          description: item.description,
+          category_code: item.category_code,
+          category_description: item.category_description,
+        });
+        console.log("description saved");
+      } catch (error) {
+        console.error("ERROR saving description:", error);
+        alert("description save failed");
+      }
+      //tedtest check if description is in table category_descriptions
+      //if not then add "++id,description,category_code,category_description"
+      //if it is there ask user if the category_description for this description should change
+      //if yes change it, no don't do anything
+    } else {
+      console.log(`Field ${key} for item ${index} was not changed`);
+    }
+  };
+
+  const handleFocus = (e, index) => {
+    const { name, value } = e.target;
+    setOriginalValue({
+      ...originalValue,
+      [index]: { ...originalValue[index], [name]: value },
+    });
+  };
+
+  const handleFixOpenBal = () => {
+    setFixOpenBal(true);
   };
 
   return (
@@ -882,23 +1053,57 @@ const ImportDataNew = (props) => {
           <div>
             {getColumnHeaders()}
             <DisplayLinesData />
-            <div className="button_grid">
+            <div
+              className="button_grid"
+              style={{
+                gridTemplateColumns: modalGone
+                  ? "repeat(3, 7rem)"
+                  : "repeat(2, 7rem)",
+              }}
+            >
               <button
                 className="main_buttons"
                 disabled={selectedCheckboxes?.length <= 0}
                 onClick={handleDelete}
               >
-                <FaRegTrashAlt size={iconSize * 0.9} />
+                <FaRegTrashAlt
+                  size={iconSize * 0.9}
+                  style={{ marginRight: "0.5rem" }}
+                />
                 Delete
               </button>
               <button
+                title="Only active when opening balance exists"
                 className="main_buttons"
                 onClick={handleSave}
                 disabled={!confirmations}
               >
-                <FaRegSave size={iconSize} />
+                <FaRegSave size={iconSize} style={{ marginRight: "0.5rem" }} />
                 Save
               </button>
+              {/* <button
+                title="Only active when opening balance exists"
+                className="main_buttons"
+                onClick={handleFixOpenBal}
+                disabled={!confirmations}
+              >
+                <FaRegSave size={iconSize} style={{ marginRight: "0.5rem" }} />
+                Fix Open balance
+              </button> */}
+              {modalGone && (
+                <button
+                  className="main_buttons"
+                  onClick={() => {
+                    setNoOpenBalance(true);
+                  }}
+                >
+                  <FaBalanceScaleLeft
+                    size={iconSize}
+                    style={{ marginRight: "0.5rem" }}
+                  />
+                  Set Opening Balance
+                </button>
+              )}
             </div>
           </div>
         </div>
@@ -909,8 +1114,9 @@ const ImportDataNew = (props) => {
           title={
             noOpenBalance ? "Opening balance" : "Warning: Balance mismatch"
           }
-          onClose={() =>
-            noOpenBalance ? setNoOpenBalance(false) : setBalanceUnequal(false)
+          onClose={
+            () => handleClose()
+            // noOpenBalance ? setNoOpenBalance(false) : setBalanceUnequal(false)
           }
           onClickOutside={() => handleClickOutside()}
           footer={
@@ -928,6 +1134,7 @@ const ImportDataNew = (props) => {
                 className="UI-button-service"
                 type="button"
                 onClick={() => {
+                  setModalGone(true);
                   setNoOpenBalance(false);
                   setBalanceUnequal(false);
                 }}
@@ -975,6 +1182,48 @@ const ImportDataNew = (props) => {
             </p>
           )}
         </Modals>
+      )}
+      {loadedTransactions && loadedTransactions?.length > 0 && dataSaved && (
+        <div className="display-container">
+          {/* {loadedTransactions && loadedTransactions?.length > 0 ? ( */}
+          <p>
+            These transactions are transactions saved and transactions without
+            category descriptions. For the App to work category descriptions
+            must exist for each transaction. The App will learn the category
+            descriptions for certain descriptions. Please edit the categories
+            here if they are incorrect and fill in missing descriptions.
+          </p>
+          <EditTableNew
+            checkedTransactions={setCheckedTransactions}
+            transactions={loadedTransactions}
+            setTransactions={setEditedTrans}
+            handleBlur={handleBlur}
+            handleFocus={handleFocus}
+            colWidthArr={colWidths}
+            headers={uniqueKeys}
+            cantEditArray={cantEditArray}
+          />
+          <button
+            className="main_buttons"
+            disabled={selectedEditCatCheckboxes?.length <= 0}
+            onClick={handleEditCatDelete}
+          >
+            <FaRegTrashAlt
+              size={iconSize * 0.9}
+              style={{ marginRight: "0.5rem" }}
+            />
+            Delete
+          </button>
+          <button
+            title="Only active when opening balance exists"
+            className="main_buttons"
+            onClick={handleEditCatSave}
+            disabled={!confirmations}
+          >
+            <FaRegSave size={iconSize} style={{ marginRight: "0.5rem" }} />
+            Save
+          </button>
+        </div>
       )}
     </div>
   );
