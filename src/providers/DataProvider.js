@@ -1,4 +1,6 @@
 import React, { createContext, useState, useContext, useMemo } from "react";
+import BudgetMenus from "../components/BudgetMenu";
+import BudgetNew from "../components/BudgetNew";
 
 const DataContext = createContext();
 
@@ -10,6 +12,7 @@ export const DataProvider = ({ children }) => {
   const [editableHeaders, setEditableHeaders] = useState([]);
   const [selectedCheckboxes, setSelectedCheckboxes] = useState([]);
   const [scrollPosition, setScrollPosition] = useState(0);
+  const [currentBudgetName, setCurrentBudgetName] = useState("");
 
   const contextValue = useMemo(
     () => ({
@@ -27,6 +30,8 @@ export const DataProvider = ({ children }) => {
       setSelectedCheckboxes,
       scrollPosition,
       setScrollPosition,
+      currentBudgetName,
+      setCurrentBudgetName,
     }),
     [
       currentUser,
@@ -36,6 +41,7 @@ export const DataProvider = ({ children }) => {
       editableHeaders,
       selectedCheckboxes,
       scrollPosition,
+      currentBudgetName,
     ]
   );
 

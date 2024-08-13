@@ -42,7 +42,7 @@ const Modals = (props) => {
         caller="Modals"
         listen
         onClickOutside={() => {
-          handleClose();
+          props.onClickOutside && handleClose();
         }}
         // onClickOutside={() => {
         //     props.onClickOutside()

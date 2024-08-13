@@ -83,7 +83,6 @@ const CategorySummaries = () => {
     const transactionsByMonth = {};
 
     while (currentMonth <= endMonth) {
-      console.log("tedtestA currentMonth=", currentMonth);
       const startDate = startOfMonth(currentMonth);
       const endDate = lastDayOfMonth(currentMonth);
 
@@ -107,7 +106,6 @@ const CategorySummaries = () => {
 
       currentMonth = addMonths(currentMonth, 1);
     }
-    console.log("tedtestA transactionsByMonth=", transactionsByMonth);
     return transactionsByMonth;
   };
 
@@ -116,10 +114,8 @@ const CategorySummaries = () => {
 
     Object.keys(transactionsByMonth).forEach((monthYear) => {
       const transactions = transactionsByMonth[monthYear];
-      console.log("tedtestA transactions=", transactions);
       transactions.forEach((transaction) => {
         const category = transaction.category_description || "Unalllocated";
-        console.log("tedtestA category=", category);
         if (!summary[category]) {
           summary[category] = {};
         }
@@ -130,12 +126,6 @@ const CategorySummaries = () => {
         if (typeof transaction.amount1 === "string")
           floatAmount1 = parseFloat(parseFloat(transaction.amount1).toFixed(2));
         else floatAmount1 = transaction.amount1;
-        console.log(
-          "tedtest typeof transaction.amount1=",
-          typeof transaction.amount1,
-          "     floatAmount1=",
-          floatAmount1
-        );
         let floatAmount2;
         if (typeof transaction.amount2 === "string")
           floatAmount2 = parseFloat(parseFloat(transaction.amount2).toFixed(2));
@@ -143,7 +133,6 @@ const CategorySummaries = () => {
         summary[category][monthYear] += floatAmount1 - floatAmount2;
       });
     });
-    console.log("tedtestA summary=", summary);
     // Transform the summary object into an array of objects
     const summaryArray = Object.keys(summary).map((category) => {
       const totalPerMonth = summary[category];
@@ -153,7 +142,6 @@ const CategorySummaries = () => {
       );
       return { category, totalAmount, ...totalPerMonth };
     });
-    console.log("tedtestA summaryArray=", summaryArray);
 
     // Sort the array based on totalAmount in descending order
     // summaryArray.sort((a, b) => b.totalAmount - a.totalAmount);
@@ -167,10 +155,6 @@ const CategorySummaries = () => {
       const transactionsByMonth = await fetchTransactions(startDate, endDate);
       const summary = summarizeTransactions(transactionsByMonth);
       setTransactionsForSummary(summary);
-      console.log(
-        "tedtestA this will be made to be transactionsForSummary. summary=",
-        summary
-      );
     };
 
     fetchAndSummarize();
@@ -184,7 +168,6 @@ const CategorySummaries = () => {
           )
         : [];
 
-    console.log("tedtestA monthKeys=", monthKeys);
     return (
       <div className="table-container">
         <table>

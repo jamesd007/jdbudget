@@ -35,7 +35,7 @@
 }
 
 .main_buttons {
-  height: 2rem;
+  height: 1.6rem;
   width: fit-content;
   background-color: lightblue;
   border: 1px solid darkblue;
@@ -44,10 +44,11 @@
   align-items: center;
   justify-content: space-around;
   cursor: pointer;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25);
   white-space: nowrap;
   padding: 0.3rem 0.8rem;
+  margin-left: 0.5rem;
 }
 
 .main_buttons:disabled {

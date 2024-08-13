@@ -1,7 +1,77 @@
-.budget-table-container {
+/* .budget-table-container {
   width: 100%;
   overflow: auto;
   max-height: 50vh;
+} */
+
+.table-container {
+  width: 100%;
+  overflow: auto;
+  max-height: 50vh;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed; /* Ensures that the widths are fixed */
+}
+
+.table th,
+.table td {
+  padding: 8px;
+  border: 1px solid #ddd;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+  width: auto;
+}
+
+.table-header th.date,
+.table-body td.date {
+  width: 10%; /* Adjust as needed */
+}
+
+.table-header th.day,
+.table-body td.day {
+  width: 10%; /* Adjust as needed */
+}
+
+.table-header th.description,
+.table-body td.description {
+  width: 30%; /* Adjust as needed */
+}
+
+.table-header th.category,
+.table-body td.category {
+  width: 15%; /* Adjust as needed */
+}
+
+.table-header th.dr,
+.table-body td.dr {
+  width: 10%; /* Adjust as needed */
+}
+
+.table-header th.cr,
+.table-body td.cr {
+  width: 10%; /* Adjust as needed */
+}
+
+.table-header th.balance,
+.table-body td.balance {
+  width: 15%; /* Adjust as needed */
+}
+
+.table-body {
+  display: block;
+  max-height: 78vh; /*tedtest needs to be fixed- parent may need editing make % of parent? Adjust as needed */
+  overflow: auto;
+}
+
+.table-body table {
+  width: 100%;
 }
 
 .budgetHeader {
@@ -92,14 +162,20 @@
 
 .form {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.form-field {
+  display: flex;
+  flex-direction: column;
 }
 
 .form input,
 .form select {
   margin-right: 10px;
-  padding: 5px;
-  font-size: 14px;
+  /* padding: 5px; */
+  font-size: 0.8rem;
 }
 
 .form input[type="number"] {
@@ -175,4 +251,39 @@
   margin-bottom: 10px;
   padding: 5px;
   font-size: 14px;
+}
+
+.repeat-details {
+  display: flex;
+  flex-direction: column;
+  margin-left: 2rem;
+  font-size: 0.9rem;
+}
+
+.repeat-details-info {
+  display: flex;
+  flex-direction: row;
+  /* margin-left: 2rem; */
+  font-size: 0.8rem;
+}
+
+.budget-add-button {
+  position: absolute;
+  top: 0;
+  right: 1.25rem;
+  margin: 0;
+  padding: 0;
+  opacity: 0.5;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 50%;
+  border: 1px solid grey;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dayRecords {
+  margin: 0.24em 0 0.25em 0;
 }

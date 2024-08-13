@@ -1,0 +1,59 @@
+/* HollowText.css */
+.hollow-text-container {
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 6rem;
+  width: 100vw;
+  background: transparent;
+}
+
+.hollow-text {
+  font-weight: bold;
+  color: transparent;
+  /* color: cadetblue; */
+  -webkit-text-stroke: 2px darkblue; /* Outline color and thickness */
+  /* position: relative; */
+  /* position: absolute; */
+  font-size: 3rem;
+}
+
+.hollow-text::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: cadetblue;
+  /* tedtest try the icon/pic background later */
+  /* background: url("../icons/blue-sky.jpg") repeat; */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* background: url("path-to-your-background-image.jpg") repeat;  */
+/* Or use any background color */
+
+.strokeme {
+  color: white;
+  background-color: white;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+.data-container {
+  position: absolute;
+  top: 8rem;
+  height: calc(100vh - 8rem);
+  width: 100vw;
+}
+
+.data-header {
+  margin-left: 1rem;
+  font-size: 2rem;
+}

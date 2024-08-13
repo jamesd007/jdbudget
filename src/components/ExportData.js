@@ -34,7 +34,6 @@ const ExportData = () => {
         .where("date")
         .between(isoStartDate, isoEndDate, true, true)
         .toArray();
-      console.log("tedtestQ transactions=", transactions);
       const transForExport = transactions.map((transaction) => {
         return {
           ...transaction,

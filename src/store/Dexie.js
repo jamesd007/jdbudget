@@ -3,8 +3,9 @@ import Dexie from "dexie";
 const db = new Dexie("BudgetAppDB");
 db.version(4).stores({
   users: "++id,userID,username,hashedPassword,email,address, telephone",
-  budget:
-    "++id,user_id,name,type,year,date,amount,category,description,repeat_options,growth_options,extras",
+  budgetdetails: "++id,user_id,name,type,lock,year,startmonth",
+  budgettransactions:
+    "++id,user_id,name,date,amount,category,description,repeat_options,growth_options,extras",
   transactions:
     "++id,user_id,account_id,date,day,type,description,category_code,category_description,amount1,amount2,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
   headers: "++id,user_id,account_id,headers",
@@ -35,8 +36,7 @@ async function getDatabaseSize() {
 async function getAllBudgets() {
   // return await db.budget.toArray();
   try {
-    const budgets = await db.budget.toArray();
-    console.log("tedtestGG budgets=", budgets);
+    const budgets = await db.budgettransactions.toArray();
     return budgets;
   } catch (error) {
     console.error("Error getting budgets:", error);
@@ -59,7 +59,7 @@ async function addBudget(
   growth_options,
   extras
 ) {
-  return await db.budget.add({
+  return await db.budgettransactions.add({
     user_id: user_id || "default_user_id", // Replace 'default_user_id' with an appropriate default value
     name: name || "",
     type: type || "",
@@ -73,17 +73,22 @@ async function addBudget(
   });
 }
 
-async function getBudgetsByType(type) {
-  return await db.budgets.where("type").equals(type).toArray();
+async function addBudgets(budgets) {
+  return await db.budgettransactions.bulkPut(budgets);
 }
+
+// async function getBudgetsByType(type) {
+//   return await db.budgets.where("type").equals(type).toArray();
+// }
 
 async function deleteBudget(id) {
   try {
-    await db.budget.delete(id);
+    await db.budgettransactions.delete(id);
   } catch (error) {
     console.error("Error deleting budget:", error);
   }
 }
+
 async function getAllTransactions() {
   try {
     const transactions = await db.transactions.toArray();
@@ -112,7 +117,7 @@ async function deleteTransaction(id) {
 
 async function updateBudget(id, updatedData) {
   try {
-    await db.budget.update(id, updatedData);
+    await db.budgettransactions.update(id, updatedData);
   } catch (error) {
     console.error("Error updating budget:", error);
   }
@@ -132,7 +137,8 @@ async function getAllCategories() {
 export {
   getAllBudgets,
   addBudget,
-  getBudgetsByType,
+  addBudgets,
+  // getBudgetsByType,
   deleteBudget,
   updateBudget,
   getAllTransactions,

@@ -173,24 +173,11 @@ const ImportDataNew = (props) => {
     dateString = preprocessDateString(dateString);
     for (let formatString of dateFormats) {
       try {
-        console.log("tedtestQQQ dateString=", dateString);
-        console.log("tedtestQQQ formatString=", formatString);
-
         const parsedDate = parse(dateString, formatString, new Date());
-        console.log("tedtestQQ parsedDate=", parsedDate);
         if (isValid(parsedDate)) {
-          console.log("tedtestQQ parsedDate is valid");
           const isoDate = formatISO(parsedDate, { representation: "date" });
           // const isoDate = parsedDate.
           // toISOString(); // Full ISO date-time string
-          console.log(
-            `tedtestQQ Successfully parsed with format ${formatString}:`,
-            isoDate
-          );
-          console.log(
-            `Successfully parsed with format ${formatString}:`,
-            isoDate
-          );
           return isoDate;
         }
       } catch (error) {
@@ -562,14 +549,6 @@ const ImportDataNew = (props) => {
         else setNewOpenBalance(openBalance);
       }
     };
-    console.log(
-      "tedtestQ is this happening??? openBalance=",
-      openBalance,
-      "  accountID=",
-      accountID,
-      "  editableHeaders=",
-      editableHeaders
-    );
     if (!accountID) return;
     //  !openBalance || || !editableHeaders) return;
     checkOpeningBalanceDatabase();
@@ -640,7 +619,6 @@ const ImportDataNew = (props) => {
       // If no duplicate found, add the transaction
       let toBeAdded = true;
       if (duplicate) {
-        console.log("tedtestQ duplicate: transaction=", transaction);
         toBeAdded = window.confirm(
           transaction.date +
             "  " +

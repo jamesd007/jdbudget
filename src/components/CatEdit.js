@@ -13,7 +13,6 @@ const CatEdit = () => {
         getAllCategories();
         const cats = await getAllCategories();
         setCatData(cats);
-        console.log("tedtest Fetched categories:", cats);
       } catch (error) {
         console.error("Error retrieving categories:", error);
       }

@@ -16,39 +16,39 @@ import { useDataContext } from "../providers/DataProvider";
 import DailyBudget from "./DailyBudget";
 
 const BudgetMenus = () => {
-  const [calendarOption, setCalendarOption] = useState(false);
-  const [dailyBudgetOption, setDailyBudgetOption] = useState(false);
+  const [dbOption, setDBOption] = useState(false);
+  const [importOption, setImportOption] = useState(false);
   const [monthlyBudgetOption, setMonthlyBudgetOption] = useState(true);
   const [otherOption, setOtherOption] = useState(true);
   const [showDots, setShowDots] = useState(true);
   const navigate = useNavigate();
 
-  const handleTestCalendar = () => {
-    setCalendarOption(true);
+  const handleDB = () => {
+    setDBOption(true);
     setMonthlyBudgetOption(false);
-    setDailyBudgetOption(false);
+    setImportOption(false);
     setOtherOption(false);
   };
 
-  const handleDailyBudget = () => {
-    setDailyBudgetOption(true);
+  const handleImport = () => {
+    setImportOption(true);
     setMonthlyBudgetOption(false);
-    setCalendarOption(false);
+    setDBOption(false);
     setOtherOption(false);
   };
 
   const handleMonthlyBudget = () => {
-    setDailyBudgetOption(false);
+    setImportOption(false);
     setMonthlyBudgetOption(false);
-    setCalendarOption(false);
+    setDBOption(false);
     setOtherOption(false);
   };
 
   const handleOther = () => {
     setOtherOption(true);
     setMonthlyBudgetOption(false);
-    setDailyBudgetOption(false);
-    setCalendarOption(false);
+    setImportOption(false);
+    setDBOption(false);
   };
 
   const handleClose = () => {
@@ -57,16 +57,16 @@ const BudgetMenus = () => {
 
   const menuItems = [
     {
-      leftIcon: <FaFileImport size={24} />,
-      text: "Test calendar",
-      callback: handleTestCalendar,
+      leftIcon: <FaRegEdit size={24} />,
+      text: "Daily Budget",
+      callback: handleDB,
       permissionLevels: ["any"],
       goToMenu: "",
     },
     {
-      leftIcon: <FaRegEdit size={24} />,
-      text: "Daily budget",
-      callback: handleDailyBudget,
+      leftIcon: <FaFileImport size={24} />,
+      text: "Import (?)",
+      callback: handleImport,
       permissionLevels: ["any"],
       goToMenu: "",
     },
@@ -131,12 +131,12 @@ const BudgetMenus = () => {
         }}
       >
         <span style={{ fontSize: "2rem", marginLeft: "1rem" }}>Budgets</span>
-        {calendarOption && (
+        {dbOption && (
           <>
             <span
               style={{
                 fontSize: "1.5rem",
-                display: calendarOption ? {} : "none",
+                display: dbOption ? {} : "none",
               }}
             >
               {" "}
@@ -145,18 +145,18 @@ const BudgetMenus = () => {
             <DailyBudget />
           </>
         )}
-        {dailyBudgetOption && (
+        {importOption && (
           <>
             <span
               style={{
                 fontSize: "1.5rem",
-                display: dailyBudgetOption ? {} : "none",
+                display: importOption ? {} : "none",
               }}
             >
               {" "}
               - Edit
             </span>
-            <BudgetNew />
+            {/* <BudgetNew /> */}
           </>
         )}
         {/* {otherOption && (

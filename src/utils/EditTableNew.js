@@ -52,7 +52,6 @@ const EditTableNew = ({
         const uniqueCategories = await db.transactions
           .orderBy("category_description")
           .uniqueKeys();
-        console.log("tedtesta uniquecategories=", uniqueCategories);
         setCategories(uniqueCategories);
       } catch (error) {
         console.error("Failed to fetch categories:", error);
