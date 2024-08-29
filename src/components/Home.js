@@ -1,14 +1,32 @@
-import React from "react";
+import React, { useContext } from "react";
 import "../styles/Dashboard.css";
 import { useDataContext } from "../providers/DataProvider";
+import { UserContext } from "../contexts/UserContext";
 
 const Home = () => {
-  const { currentUser, selectedFile, delimiter } = useDataContext();
+  const {
+    // currentUser,
+    selectedFile,
+    delimiter,
+  } = useDataContext();
+  const { user } = useContext(UserContext);
 
   return (
     <div>
-      <div className="hollow-text-container">
-        <div className="hollow-text">the Budget App</div>
+      <div
+      // className="hollow-text-container-main"
+      >
+        <div
+          className="hollow-text"
+          style={{
+            position: "absolute",
+            bottom: "5%",
+            right: "5%",
+            fontSize: "2.5rem",
+          }}
+        >
+          the budget app
+        </div>
       </div>
       <div className="data-container">
         <div className="data-header">Total Income</div>
@@ -20,7 +38,7 @@ const Home = () => {
         </div>
         <br />
         <div className="data-header" style={{ fontSize: "1rem" }}>
-          <div>currrent user: {currentUser}</div>
+          <div>currrent user: {user.id}</div>
           <div>selected file: {selectedFile}</div>
           <div>delimiter: {delimiter}</div>
         </div>

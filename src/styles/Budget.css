@@ -65,8 +65,9 @@
 }
 
 .table-body {
-  display: block;
-  max-height: 78vh; /*tedtest needs to be fixed- parent may need editing make % of parent? Adjust as needed */
+  /* display: block; */
+  max-height: 68vh;
+  /*tedtest needs to be fixed- parent may need editing make % of parent? Adjust as needed */
   overflow: auto;
 }
 

@@ -1,11 +1,11 @@
 import React, { createContext, useState, useContext, useMemo } from "react";
-import BudgetMenus from "../components/BudgetMenu";
-import BudgetNew from "../components/BudgetNew";
+import { UserProvider } from "../contexts/UserContext";
 
 const DataContext = createContext();
 
 export const DataProvider = ({ children }) => {
-  const [currentUser, setCurrentUser] = useState("1"); //tedtest todo program for users this must change to null or empty string
+  // const [currentUser, setCurrentUser] = useState(null);
+  //tedtest todo program for users this must change to null or empty string
   const [selectedFile, setSelectedFile] = useState(null);
   const [delimiter, setDelimiter] = useState(",");
   const [lines, setLines] = useState([]);
@@ -16,8 +16,8 @@ export const DataProvider = ({ children }) => {
 
   const contextValue = useMemo(
     () => ({
-      currentUser,
-      setCurrentUser,
+      // currentUser,
+      // setCurrentUser,
       selectedFile,
       setSelectedFile,
       delimiter,
@@ -34,7 +34,7 @@ export const DataProvider = ({ children }) => {
       setCurrentBudgetName,
     }),
     [
-      currentUser,
+      // currentUser,
       selectedFile,
       delimiter,
       lines,
@@ -46,7 +46,10 @@ export const DataProvider = ({ children }) => {
   );
 
   return (
+    // <UserProvider>
     <DataContext.Provider value={contextValue}>{children}</DataContext.Provider>
+    // {children}
+    // </UserProvider>
   );
 };
 

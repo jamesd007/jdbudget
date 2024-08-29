@@ -2,8 +2,9 @@ import Dexie from "dexie";
 
 const db = new Dexie("BudgetAppDB");
 db.version(4).stores({
-  users: "++id,userID,username,hashedPassword,email,address, telephone",
-  budgetdetails: "++id,user_id,name,type,lock,year,startmonth",
+  users:
+    "++id,user_id,username,hashedPassword,email,address, telephone,last_budget",
+  budgetdetails: "++id,user_id,name,type,lock,year,startmonth,openingbalance",
   budgettransactions:
     "++id,user_id,name,date,amount,category,description,repeat_options,growth_options,extras",
   transactions:

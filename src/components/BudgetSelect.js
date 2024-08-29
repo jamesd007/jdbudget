@@ -69,6 +69,7 @@ const BudgetSelect = () => {
 
   const handleChange = (event) => {
     setSelectedBudget(event.target.value);
+    setCurrentBudgetName(event.target.value);
   };
 
   const handleBudgetName = (e) => {

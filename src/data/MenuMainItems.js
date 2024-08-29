@@ -47,7 +47,7 @@ export const menuMainItems = [
   },
   {
     title: "Log out",
-    url: "/",
+    url: "/logout",
     icon: <FiLogOut size={24} />,
     cName: "main-menu-text",
   },

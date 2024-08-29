@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import "../styles/MenuStyles.css";
 
 import { BiCollection } from "react-icons/bi";
@@ -31,15 +31,17 @@ import DropdownMenu from "../utils/DropDownMenu";
 import { menuItemsDataMain } from "../MenuItemsDataMain";
 import { useLocation } from "react-router-dom";
 import { useDataContext } from "../providers/DataProvider";
+import { UserContext } from "../contexts/UserContext";
 
 const MenuComponent = (props) => {
   const [showDots, setShowDots] = useState(true);
   const [openMainMenu, setOpenMainMenu] = useState(false);
   const [changeHgt, setChangeHgt] = useState(false);
   const [scrnHgt, setScrnHgt] = useState(0);
-  const [startComponent, setStartComponent] = useState(true);
+  // const [startComponent, setStartComponent] = useState(true);
   const [outClick, setOutClick] = useState(false);
   const location = useLocation();
+  const { logout } = useContext(UserContext);
 
   useEffect(() => {
     function handleResize() {
@@ -58,35 +60,38 @@ const MenuComponent = (props) => {
     props.setModal(undefined);
   };
 
-  const goLogout = () => {
-    setOpenMainMenu(false);
-    setStartComponent(false);
-    props.setModal(
-      <Modals
-        // noBckgrnd={true}
-        title="Sign Out"
-        onClose={() => props.setModal(undefined)}
-        onClickOutside={() => handleClickOutside()}
-        footer={
-          <div>
-            <button
-              className="UI-button-service"
-              type="button"
-              onClick={() => {
-                props.setModal(undefined);
-              }}
-            >
-              Sign Out
-            </button>
-          </div>
-        }
-      >
-        <label className="modal-label-new">
-          Are you sure you want to sign out?
-        </label>
-      </Modals>
-    );
+  const handleLogout = () => {
+    logout();
   };
+  // const goLogout = () => {
+  //   setOpenMainMenu(false);
+  //   setStartComponent(false);
+  //   props.setModal(
+  //     <Modals
+  //       // noBckgrnd={true}
+  //       title="Sign Out"
+  //       onClose={() => props.setModal(undefined)}
+  //       onClickOutside={() => handleClickOutside()}
+  //       footer={
+  //         <div>
+  //           <button
+  //             className="UI-button-service"
+  //             type="button"
+  //             onClick={() => {
+  //               props.setModal(undefined);
+  //             }}
+  //           >
+  //             Sign Out
+  //           </button>
+  //         </div>
+  //       }
+  //     >
+  //       <label className="modal-label-new">
+  //         Are you sure you want to sign out?
+  //       </label>
+  //     </Modals>
+  //   );
+  // };
 
   const menuItems = [
     {
@@ -127,7 +132,7 @@ const MenuComponent = (props) => {
     },
     {
       title: "Log out",
-      url: "/",
+      url: "/logout",
       icon: <FiLogOut size={24} />,
       cName: "main-menu-text",
     },
@@ -250,7 +255,7 @@ const MenuComponent = (props) => {
         {openMainMenu && (
           <DropdownMenu
             type="links"
-            // roles={("admin", "owner", "designer", "tx", "whisper", "rx")}
+            // roles={("admin", "user", "etc")}
             menuItems={menuItems}
             onClose={() => setOpenMainMenu(false)}
             mainscreen={true}

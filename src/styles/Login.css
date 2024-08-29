@@ -1,0 +1,147 @@
+.button_login {
+  height: fit-content;
+  width: 7rem;
+  border: solid 1px darkcyan;
+  /* border: solid 1px rgba(62, 62, 62, 0.8); */
+  border-radius: 0.4rem;
+  font-size: 1rem;
+  background: linear-gradient(to top, rgb(0, 188, 227, 1), #c3e6fd);
+  padding: 0.3rem 0;
+  /* background-color: lightcyan; */
+  /* background-color: rgba(255, 165, 0, 0.5); */
+  margin-right: 0.5rem;
+  /* box-shadow: 2px 3px 0px 0px rgba(0, 0, 0, 0.2); */
+  box-shadow: inset -3px -3px 4px 0px rgba(255, 255, 255, 1),
+    0px 3px 2px 0px rgba(0, 0, 0, 0.2);
+  /* box-shadow: 2px 3px 0px 0px rgba(62, 62, 62, 0.2); */
+}
+
+.button_signup {
+  height: fit-content;
+  width: 7rem;
+  border: solid 1px darkcyan;
+  border-radius: 0.4rem;
+  font-size: 1rem;
+  background: linear-gradient(to top, rgb(249, 131, 5), #eff6be);
+  padding: 0.3rem 0;
+  margin-right: 0.5rem;
+  box-shadow: inset -3px -3px 4px 0px rgba(255, 255, 255, 1),
+    0px 3px 2px 0px rgba(0, 0, 0, 0.2);
+}
+
+.login-input {
+  max-width: 20rem;
+  width: 99%;
+  height: 2rem;
+  border-radius: 0.5rem;
+  z-index: 9;
+  border: 1px solid darkblue;
+  background-color: rgb(202, 208, 208);
+}
+
+.password-holder {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  height: 2.2rem;
+  border-radius: 0.5rem;
+  width: 100%;
+  max-width: 20.2rem;
+  border: 1px solid darkblue;
+  background-color: rgb(202, 208, 208);
+  margin-bottom: 0.5rem;
+  box-shadow: inset -3px -3px 4px 0px rgba(255, 255, 255, 1),
+    0px 3px 2px 0px rgba(0, 0, 0, 0.2);
+}
+
+.show-password-button {
+  border: none;
+  background-color: transparent;
+  margin: 0;
+  width: 2rem;
+  padding: 0;
+}
+
+.forgotten-password {
+  align-self: flex-start;
+  border: 1px solid darkgray;
+  border-radius: 0.5rem;
+  background-color: white;
+  height: fit-content;
+  padding: 0 0.5rem;
+}
+
+.remember-checkbox {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-size: 1rem;
+  width: fit-content;
+  height: fit-content;
+}
+
+/* HollowText.css */
+.hollow-text-container {
+  position: absolute;
+  top: 5%;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  justify-content: center;
+  /* align-items: center; */
+  height: 14rem;
+  width: 70%;
+  border: 1px darkblue solid;
+  border-radius: 0.8rem;
+  /* background: transparent; */
+  background: linear-gradient(180deg, #034e8d, #47a9fb);
+  box-shadow: -2px 3px 4px 0px rgba(0, 0, 0, 0.4);
+  /* background-color: orange; this your primary color */
+}
+
+.hollow-text {
+  font-family: "Roboto", sans-serif;
+  font-weight: 900;
+  color: transparent;
+  -webkit-text-stroke: 1px darkslategray; /* Outline color and thickness */
+  font-size: 7rem;
+  margin-left: 1rem;
+}
+
+.hollow-text::before {
+  content: attr(data-text);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: cadetblue;
+  /* tedtest try the icon/pic background later */
+  /* background: url("../icons/blue-sky.jpg") repeat; */
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* background: url("path-to-your-background-image.jpg") repeat;  */
+/* Or use any background color */
+
+.strokeme {
+  color: white;
+  background-color: white;
+  text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000,
+    1px 1px 0 #000;
+}
+
+.data-container {
+  position: absolute;
+  top: 8rem;
+  height: calc(100vh - 8rem);
+  width: 100vw;
+}
+
+.data-header {
+  margin-left: 1rem;
+  font-size: 2rem;
+}

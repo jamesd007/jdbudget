@@ -1,6 +1,5 @@
 import React, { useContext, useEffect, useState } from "react";
 import "../styles/MainStyles.css";
-import BudgetNew from "./BudgetNew";
 import DropdownMenu from "../utils/DropDownMenu";
 import { FaFileImport } from "react-icons/fa";
 import { FaFileExport } from "react-icons/fa";
@@ -22,6 +21,7 @@ const BudgetMenus = () => {
   const [otherOption, setOtherOption] = useState(true);
   const [showDots, setShowDots] = useState(true);
   const navigate = useNavigate();
+  const { currentBudgetName, setCurrentBudgetName } = useDataContext();
 
   const handleDB = () => {
     setDBOption(true);
@@ -104,8 +104,14 @@ const BudgetMenus = () => {
     setMonthlyBudgetOption((prevOpen) => !prevOpen);
   };
 
+  // useEffect(() => {
+  //   setCurrentBudgetName(localStorage.getItem("currentBudgetName") || "JD");
+  // }, []);
+
   return (
-    <div>
+    <div
+    //  style={{ position: "relative" }}
+    >
       <div className="menu-dots">
         <div className="main-menu">
           <span style={showDots ? {} : { display: "none" }}>
@@ -124,6 +130,16 @@ const BudgetMenus = () => {
           )}
         </div>
       </div>
+      {/* <div
+        style={{
+          position: "absolute",
+          top: "1rem",
+          left: "1rem",
+          fontSize: "3rem",
+        }}
+      >
+        Budget
+      </div> */}
       <div
         className="work-container"
         style={{
@@ -131,6 +147,9 @@ const BudgetMenus = () => {
         }}
       >
         <span style={{ fontSize: "2rem", marginLeft: "1rem" }}>Budgets</span>
+        <div style={{ marginLeft: "1rem" }}>
+          budget name :{currentBudgetName}
+        </div>
         {dbOption && (
           <>
             <span
@@ -156,7 +175,6 @@ const BudgetMenus = () => {
               {" "}
               - Edit
             </span>
-            {/* <BudgetNew /> */}
           </>
         )}
         {/* {otherOption && (
