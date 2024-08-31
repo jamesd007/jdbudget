@@ -12,6 +12,8 @@ db.version(4).stores({
   headers: "++id,user_id,account_id,headers",
   category_descriptions:
     "++id,user_id,description,category_code,category_description",
+  //category_code is to be used with importing data from banks, it will, hopefully, tie up with bank codes
+  //the description refers to a bank decription- think about this
 });
 
 db.open().catch((err) => {
@@ -135,6 +137,14 @@ async function getAllCategories() {
   return await db.category_descriptions.toArray();
 }
 
+async function updateCategories(id, updatedData) {
+  try {
+    await db.category_descriptions.update(id, updatedData);
+  } catch (error) {
+    console.error("Error updating categories:", error);
+  }
+}
+
 export {
   getAllBudgets,
   addBudget,
@@ -147,6 +157,7 @@ export {
   deleteTransaction,
   updateTransaction,
   getAllCategories,
+  updateCategories,
   db,
   getDatabaseSize,
 };

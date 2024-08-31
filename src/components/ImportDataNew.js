@@ -15,6 +15,7 @@ import EditTableNew from "../utils/EditTableNew";
 import { parse, formatISO, isValid, set } from "date-fns";
 import { updateTransaction } from "../store/Dexie";
 import possHeaders from "../data/possHeaders";
+import { UserContext } from "../contexts/UserContext";
 
 const ImportDataNew = (props) => {
   const [openBalance, setOpenBalance] = useState(0);
@@ -95,6 +96,7 @@ const ImportDataNew = (props) => {
     "d MMM yyyy",
     "d MMM yy",
   ];
+  const { user } = useContext(UserContext);
 
   const showInfoHeaders = () => {
     alert(
@@ -652,6 +654,7 @@ const ImportDataNew = (props) => {
           (closingBalance + transactionAmount).toFixed(2)
         );
         transaction.balance = closingBalance;
+        transaction.user_id = user.id;
         countRecords++;
         let id = await db.transactions.add(transaction);
         idArr.push(id);

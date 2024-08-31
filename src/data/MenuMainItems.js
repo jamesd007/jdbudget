@@ -1,6 +1,7 @@
 import { AiFillHome } from "react-icons/ai";
-import { FaFileImport } from "react-icons/fa";
-import { FaFileExport } from "react-icons/fa";
+import { BiSolidCategoryAlt } from "react-icons/bi";
+// import { FaFileImport } from "react-icons/fa";
+// import { FaFileExport } from "react-icons/fa";
 import { FaCalculator } from "react-icons/fa";
 import { BsGraphUpArrow } from "react-icons/bs";
 import { FaPrint } from "react-icons/fa";
@@ -25,6 +26,12 @@ export const menuMainItems = [
     title: "Transactions",
     url: "/transactions",
     icon: <GrTransaction size={24} />,
+    cName: "main-menu-text",
+  },
+  {
+    title: "Categories",
+    url: "/categories",
+    icon: <BiSolidCategoryAlt size={24} />,
     cName: "main-menu-text",
   },
   {

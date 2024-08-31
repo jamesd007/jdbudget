@@ -5,6 +5,7 @@ import MenuComponent from "./MenuComponent";
 import Home from "./Home";
 import BudgetMenu from "./BudgetMenu";
 import Transactions from "./Transactions";
+import Categories from "./Categories";
 import Analysis from "./Analysis";
 import Reports from "./Reports";
 import System from "./System";
@@ -23,6 +24,7 @@ function FrontPage() {
         {/* <Route path="/budget" element={<BudgetMenu />} /> */}
         <Route path="/budget" element={<BudgetTest />} />
         <Route path="/transactions" element={<Transactions />} />
+        <Route path="/categories" element={<Categories />} />
         <Route path="/analysis" element={<Analysis />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/system" element={<System />} />

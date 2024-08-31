@@ -7,6 +7,7 @@ import "../styles/MainStyles.css";
 import db from "../store/Dexie";
 import {
   getAllBudgets,
+  getAllCategories,
   addBudget,
   deleteBudget,
   updateBudget,
@@ -19,6 +20,7 @@ import "../styles/DatePicker.css"; // Import the custom CSS file
 import { FaPlus } from "react-icons/fa";
 import useHandleRecurrence from "../hooks/useHandleRecurrence";
 import { UserContext } from "../contexts/UserContext";
+import CategoryModal from "./categories/CategoryModal";
 
 const CustomCaption = ({ date, localeUtils }) => {
   const monthName = date.toLocaleString("default", { month: "long" });
@@ -99,6 +101,7 @@ const DailyBudget = () => {
   const [monthFreqOptionDay, setMonthFreqOptionDay] = useState("");
   const [numberOfMonthsMonthly, setNumberOfMonthsMonthly] = useState(1);
   const [allBudgets, setAllBudgets] = useState([]);
+  const [allCategories, setAllCategories] = useState([]);
   const { currentBudgetName, setCurrentBudgetName } = useDataContext();
   const [transactionType, setTransactionType] = useState("Expenses");
   const [recurYears, setRecurYears] = useState(1);
@@ -152,7 +155,7 @@ const DailyBudget = () => {
   const continuousBalanceRef = useRef(null); // Ref to hold the continuous balance
   const initialCalculationDoneRef = useRef(false); // Flag to ensure single execution
   const [calculatedBalances, setCalculatedBalances] = useState([]); // To store balances after calculation
-
+  const [openCatModal, setOpenCatModal] = useState(false);
   // useEffect(() => {
   //   if (currentDateRef.current) {
   //     currentDateRef.current.scrollIntoView({
@@ -170,6 +173,79 @@ const DailyBudget = () => {
   //     });
   //   }
   // }, [calendar]);
+
+  useEffect(() => {
+    //getExistingCategories from dbase
+    const getTheCategories = async () => {
+      try {
+        let catRecs = await getAllCategories();
+        setAllCategories(catRecs);
+      } catch (error) {
+        console.error("Error retrieving categories:", error);
+      }
+    };
+    getTheCategories();
+  }, [openCatModal]);
+
+  const SearchableDropdown = ({ allCategories }) => {
+    const [searchTerm, setSearchTerm] = useState("");
+    const sortedCategories = [...allCategories].sort((a, b) =>
+      a.category_description.localeCompare(b.category_description)
+    );
+
+    const handleSearchChange = (e) => {
+      setSearchTerm(e.target.value);
+    };
+
+    const filteredCategories = sortedCategories.filter((catRec) =>
+      catRec.category_description
+        .toLowerCase()
+        .startsWith(searchTerm.toLowerCase())
+    );
+
+    return (
+      <div style={{ width: "15rem", marginBottom: "0.5rem" }}>
+        <label>
+          Category:
+          <input
+            style={{ display: "none" }}
+            type="text"
+            placeholder="Search..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+          />
+          <select
+            onChange={(e) => {
+              const selectedValue = e.target.value;
+              if (selectedValue === "new") {
+                handleCreateNewCategory();
+              } else {
+                handleInputChange(currentDate, "category", selectedValue);
+              }
+            }}
+            value={budgetData.category || ""}
+          >
+            {/* <option disabled selected value="">
+              {" "}
+              -- select an option --{" "}
+            </option> */}
+            {filteredCategories.map((catRec) => (
+              // <option key={catRec.id} value={catRec.id}>
+              <option key={catRec.id} value={catRec.category_description}>
+                {catRec.category_description}
+              </option>
+            ))}
+            <option value="new" style={{ fontWeight: "bold" }}>
+              New Category
+            </option>{" "}
+            <option disabled value="">
+              -- select an option --{" "}
+            </option>
+          </select>
+        </label>
+      </div>
+    );
+  };
 
   const convertToFullDateString = (dateStr) => {
     // Create a Date object from the string
@@ -314,7 +390,7 @@ const DailyBudget = () => {
       ...prevData,
       budgetName: budgetName,
       [field]: value,
-      date: prevData.date || date,
+      date: date || new Date(),
       user_id: prevData.user_id || user.id,
     }));
   };
@@ -486,31 +562,6 @@ const DailyBudget = () => {
           };
         }
 
-        // const repeatOptions = {
-        //   frequency: frequency,
-        //   repeatFreq: repeatFreq,
-        //   repeatFreqDays: repeatFreqDays,
-        //   repeatWeeklyWeeks: repeatWeeklyWeeks,
-        //   days: days,
-        //   repeatMonthly: repeatMonthly,
-        //   dayOfMonth: dayOfMonth,
-        //   numberOfMonths: numberOfMonths,
-        //   monthFreqOption: monthFreqOption,
-        //   monthFreqOptionDay: monthFreqOptionDay,
-        //   numberOfMonthsMonthly: numberOfMonthsMonthly,
-        //   recurYears: recurYears,
-        //   yearlyRecurMonth: yearlyRecurMonth,
-        //   yearlyRecurDate: yearlyRecurDate,
-        //   yearlyOnDateDay: yearlyOnDateDay,
-        //   yearlyFreqOption: yearlyFreqOption,
-        //   yearlyFreqOptionDay: yearlyFreqOptionDay,
-        //   yearlyOnDayRecurMonth: yearlyOnDayRecurMonth,
-        //   yearlyOnDate: yearlyOnDate,
-        //   selectedDay: selectedDay,
-        //   endSpec: endSpec,
-        //   endSelectedDay: endSelectedDay,
-        //   endAfterOccurrences: endAfterOccurrences,
-        // };
         const dataToSave = {
           user_id: budgetData.user_id || "default_user_id", // Replace 'default_user_id' with an appropriate default value
           currentYear: currentYear,
@@ -565,7 +616,6 @@ const DailyBudget = () => {
             dataToSave.growth_options,
             dataToSave.extras
           );
-
           // Update the state with the new budget
           setAllBudgets((prevBudgets) => [...prevBudgets, dataToSave]);
         }
@@ -599,7 +649,6 @@ const DailyBudget = () => {
     setSelectedDay(dateObj);
     setIsModalOpen(true);
     setLastViewedDate(date);
-    sessionStorage.setItem("lastViewedDate", date);
   };
 
   const handleCloseModal = () => {
@@ -1027,33 +1076,6 @@ const DailyBudget = () => {
     };
     getBudgetData();
   }, []);
-  // useEffect(() => {
-  //   const checkAndSetBudgetName = async () => {
-  //     const savedBudgetName = localStorage.getItem("currentBudgetName") || "JD";
-  //     //check for existence of savedBudgetName on database
-  //     if (savedBudgetName) {
-  //       try {
-  //         const budgetDetail = await db.budgetdetails
-  //           .where("name")
-  //           .equals(savedBudgetName)
-  //           .first();
-  //         if (budgetDetail) {
-  //           setCurrentBudgetName(savedBudgetName);
-  //           setStartFinYr(budgetDetail.startmonth);
-  //           setCurrentYear(budgetDetail.year);
-  //           setOpeningBalance(budgetDetail.openingbalance);
-  //         } else {
-  //           console.warn("Budget name not found in database:", savedBudgetName);
-  //           setCurrentBudgetName(null);
-  //           localStorage.removeItem("currentBudgetName"); // Optionally clear invalid budget name
-  //         }
-  //       } catch (error) {
-  //         console.error("Failed to fetch budget detail from database:", error);
-  //       }
-  //     }
-  //   };
-  //   checkAndSetBudgetName();
-  // }, []);
 
   const handleIncExp = (event) => {
     setTransactionType(event.target.value);
@@ -1175,54 +1197,9 @@ const DailyBudget = () => {
     };
   }, [isThirdPickerVisible]);
 
-  // useEffect(() => {
-  //   const addDbaseName = async (
-  //     userId,
-  //     accountId,
-  //     dbaseName,
-  //     startMonth,
-  //     year
-  //   ) => {
-  //     const existingRecord = await db.budgetdetails
-  //       .where({ user_id: userId, id: accountId })
-  //       .first();
-
-  //     console.log("Existing record:", existingRecord);
-
-  //     // If the record exists and doesn't have a dbaseName, update it
-  //     if (
-  //       existingRecord &&
-  //       (existingRecord.name === undefined || existingRecord.name === null)
-  //     ) {
-  //       await db.budgetdetails.update(existingRecord.id, { name: dbaseName });
-  //       console.log("Record updated with dbaseName:", dbaseName);
-  //     } else if (existingRecord) {
-  //       console.log("Record already has a name:", existingRecord.name);
-  //     } else {
-  //       console.log("No record found for userId and accountId.");
-  //     }
-  //     if (
-  //       existingRecord &&
-  //       (existingRecord.year === undefined ||
-  //         existingRecord.year === null ||
-  //         existingRecord.startmonth === undefined ||
-  //         existingRecord.startmonth === null)
-  //     ) {
-  //       await db.budgetdetails.update(existingRecord.id, {
-  //         startmonth: startMonth,
-  //       });
-  //       await db.budgetdetails.update(existingRecord.id, { year: year });
-  //       console.log(
-  //         "Record updated with year and startmonth:",
-  //         year,
-  //         startMonth
-  //       );
-  //     }
-  //   };
-
-  //   // Usage example
-  //   addDbaseName(1, 201, "JD", "March", "2024");
-  // }, []);
+  const handleCreateNewCategory = async () => {
+    setOpenCatModal(true);
+  };
 
   useEffect(() => {
     const fetchOpeningBalance = async () => {
@@ -1245,13 +1222,6 @@ const DailyBudget = () => {
          <BudgetSelect />
        ) : ( */}
       <div style={{ marginLeft: "1rem", maxHeight: "66vh" }}>
-        {/* <div>
-          <span>Current budget: {currentBudgetName}</span>
-          <br />
-          <span>Current year: {currentYear}</span>
-          <br />
-          <span>Start month: {startFinYr}</span>
-        </div> */}
         <div className="table-header">
           <table className="table">
             <thead>
@@ -1345,11 +1315,13 @@ const DailyBudget = () => {
                       </div>
                     </td>
                     <td className="category">
-                      {dayRecords?.map((item, idx) => (
-                        <div className="dayRecords" key={idx}>
-                          {item.category}
-                        </div>
-                      ))}
+                      {dayRecords?.map((item, idx) => {
+                        return (
+                          <div className="dayRecords" key={idx}>
+                            {item.category}
+                          </div>
+                        );
+                      })}
                     </td>
                     <td className="dr">
                       {dayRecords?.map((item, idx) => (
@@ -1512,28 +1484,41 @@ const DailyBudget = () => {
                 className="form-field"
                 style={{ width: "15rem", marginBottom: "0.5rem" }}
               >
-                <label>
+                <SearchableDropdown allCategories={allCategories} />
+                {/* <label>
                   Category:
                   <select
-                    onChange={(e) =>
-                      handleInputChange(currentDate, "category", e.target.value)
-                    }
+                    onChange={(e) => {
+                      const selectedValue = e.target.value;
+                      if (selectedValue === "new") {
+                        handleCreateNewCategory(); 
+                      } else {
+                        handleInputChange(
+                          currentDate,
+                          "category",
+                          e.target.value
+                        );
+                      }
+                    }}
                     value={budgetData.category}
                   >
-                    <option value="">Select Category</option>
-                    {[
-                      "Food",
-                      "Transport",
-                      "Utilities",
-                      "Entertainment",
-                      "Others",
-                    ].map((cat) => (
-                      <option key={cat} value={cat}>
-                        {cat}
-                      </option>
-                    ))}
+                    {(allCategories || []).map((catRec) => {
+                      return (
+                        <option
+                          key={catRec.id}
+                          value={catRec.category_description}
+                        >
+                          {catRec.category_description}
+                        </option>
+                      );
+                    })}
+                    <option value="new">New Category</option>{" "}
+                    <option disabled selected value="">
+                      {" "}
+                      -- select an option --{" "}
+                    </option>
                   </select>
-                </label>
+                </label> */}
               </div>
             </div>
             <div>
@@ -1804,6 +1789,16 @@ const DailyBudget = () => {
         >
           <pre>{RecurEditText}</pre>
         </Modals>
+      )}
+      {openCatModal && (
+        <CategoryModal
+          title="Categories"
+          setOpenCatModal={setOpenCatModal}
+          db={db}
+          setCatDescription={(val) =>
+            handleInputChange(currentDate, "category", val)
+          }
+        />
       )}
     </div>
   );
