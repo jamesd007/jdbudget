@@ -13,25 +13,27 @@ import System from "./System";
 // import { DataProvider } from "../providers/DataProvider";
 import Logout from "./Logout";
 import BudgetTest from "./budget/BudgetTest";
+import TransactionsTest from "./transactions/TransactionsTest";
+import ImportDataNew from "./ImportDataNew";
 
 function FrontPage() {
   return (
-    // <DataProvider>
     <div>
       <MenuComponent />
       <Routes>
         <Route path="/" element={<Home />} />
         {/* <Route path="/budget" element={<BudgetMenu />} /> */}
         <Route path="/budget" element={<BudgetTest />} />
-        <Route path="/transactions" element={<Transactions />} />
+        {/* <Route path="/transactions" element={<Transactions />} /> */}
+        <Route path="/transactions" element={<TransactionsTest />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/analysis" element={<Analysis />} />
         <Route path="/reports" element={<Reports />} />
         <Route path="/system" element={<System />} />
         <Route path="/logout" element={<Logout />} />
+        <Route path="/import" element={<ImportDataNew />} />
       </Routes>
     </div>
-    // </DataProvider>
   );
 }
 

@@ -13,6 +13,7 @@ export const DataProvider = ({ children }) => {
   const [selectedCheckboxes, setSelectedCheckboxes] = useState([]);
   const [scrollPosition, setScrollPosition] = useState(0);
   const [currentBudgetName, setCurrentBudgetName] = useState("");
+  const [currentAccNumber, setCurrentAccNumber] = useState(null);
 
   const contextValue = useMemo(
     () => ({
@@ -32,6 +33,8 @@ export const DataProvider = ({ children }) => {
       setScrollPosition,
       currentBudgetName,
       setCurrentBudgetName,
+      currentAccNumber,
+      setCurrentAccNumber,
     }),
     [
       // currentUser,
@@ -42,6 +45,8 @@ export const DataProvider = ({ children }) => {
       selectedCheckboxes,
       scrollPosition,
       currentBudgetName,
+      currentAccNumber,
+      setCurrentAccNumber,
     ]
   );
 

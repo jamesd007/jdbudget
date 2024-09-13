@@ -48,13 +48,14 @@ function RegistrationForm(props) {
     // Save the user's details to the Dexie database
     try {
       await db.users.add({
-        user_id: "",
+        // user_id: "",
         username: username.toLowerCase(),
         email: email,
         hashedPassword: password,
         address: "",
         telephone: "",
         last_budget: "",
+        last_account: "",
       });
       alert("Registration successful");
       props.success("success");
@@ -64,58 +65,6 @@ function RegistrationForm(props) {
       alert("Registration failed");
     }
   };
-
-  // useEffect(() => {
-  //   const updateRegDetails = async () => {
-  //     if (!username || !password || !email) {
-  //       alert("Please fill in all fields");
-  //       return;
-  //     }
-  //     // Hash the user's password (you should use a secure hashing library)
-  //     // const hashedPassword = hashPassword(password);
-
-  //     // Save the user's details to the Dexie database
-  //     try {
-  //       await db.users.add({
-  //         username: username,
-  //         email: email,
-  //         hashedPassword: password,
-  //         address: "",
-  //         telephone: "",
-  //       });
-  //       alert("Registration successful");
-  //       props.success("success");
-  //     } catch (error) {
-  //       console.error("ERROR registering user:", error);
-  //       props.success("error" + error);
-  //       alert("Registration failed");
-  //     }
-  //   };
-  //   if (props.updateDatabase) updateRegDetails();
-  // }, [props.updateDatabase]);
-
-  // const handleRegistration = async (event) => {
-  // event.preventDefault();
-  // Validate user input (e.g., check for empty fields)
-  // if (!username || !password || !email) {
-  // alert('Please fill in all fields');
-  // return;
-  // }
-
-  // // Hash the user's password (you should use a secure hashing library)
-  // const hashedPassword = hashPassword(password);
-
-  // // Save the user's details to the Dexie database
-  // try {
-  // await db.users.add({ username, hashedPassword });
-  // alert('Registration successful');
-  // props.success("success")
-  // } catch (error) {
-  // console.error('ERROR registering user:', error);
-  // alert('Registration failed');
-  // props.success("error")
-  // }
-  // };
 
   return (
     <div>

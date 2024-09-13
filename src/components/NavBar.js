@@ -13,10 +13,6 @@
 
 //   const showSideBar = () => setSideBar(!sideBar);
 
-//   const handleLogout = () => {
-//     console.log("tedtest are you sure you want to logout?");
-//   };
-
 //   return (
 //     <div className="navbar">
 //       <Link to="#" className="menu-bars-hamburger">

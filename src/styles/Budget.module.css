@@ -1,0 +1,82 @@
+.tablecontainer {
+  overflow: auto;
+  max-height: 100%;
+}
+
+.table {
+  border-collapse: collapse;
+  table-layout: fixed; /* Ensures that the widths are fixed */
+  width: 100%;
+}
+
+.table th,
+.table td {
+  /* padding: 8px; */
+  border: 1px solid #ddd;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: white; /* or another background color */
+  z-index: 1;
+}
+
+th,
+td {
+  /* padding: 8px; */
+  text-align: left;
+  width: 150px; /* Set specific width for proper alignment */
+}
+thead tr {
+  border-bottom: 2px solid darkslategray;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #f2f2f2; /* Optional: add row striping for readability */
+}
+
+.tablebody {
+  max-height: 68vh;
+  overflow: auto;
+}
+
+.editcheckbox {
+  font-size: 0.8rem;
+  width: 1.2rem;
+}
+
+.date {
+  width: 5.8rem;
+  min-width: 5.8rem;
+}
+
+.day {
+  width: 2rem;
+}
+
+.description {
+  width: 14rem;
+}
+
+.category {
+  width: 10rem;
+}
+
+.dr {
+  width: 8rem;
+}
+
+.cr {
+  width: 8rem;
+}
+
+.balance {
+  width: 8rem;
+}

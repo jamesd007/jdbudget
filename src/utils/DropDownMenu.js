@@ -27,14 +27,6 @@ function DropdownMenu(props) {
   }, []);
 
   useEffect(() => {
-    window.addEventListener("popstate", props.onClose);
-    window.history.pushState({ id: 1 }, null, "menu");
-    return () => {
-      window.removeEventListener("popstate", props.onClose);
-    };
-  }, []);
-
-  useEffect(() => {
     if (dropdownRef.current) {
       setMenuHeight(dropdownRef.current.firstChild.offsetHeight);
     }
@@ -46,15 +38,6 @@ function DropdownMenu(props) {
       dropdownRef.current.style.height = `${height}px`;
     }
   };
-
-  // useEffect(() => {
-  //   calcHeight(mainMenuRef.current);
-  // }, []);
-
-  // function calcHeight(el) {
-  //   const height = el.offsetHeight;
-  //   setMenuHeight(height);
-  // }
 
   const backItem = [
     {

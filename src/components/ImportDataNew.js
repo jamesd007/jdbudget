@@ -11,7 +11,7 @@ import {
   FaRegSave,
   FaRegTrashAlt,
 } from "react-icons/fa";
-import EditTableNew from "../utils/EditTableNew";
+import EditTable from "../utils/EditTable";
 import { parse, formatISO, isValid, set } from "date-fns";
 import { updateTransaction } from "../store/Dexie";
 import possHeaders from "../data/possHeaders";
@@ -19,11 +19,11 @@ import { UserContext } from "../contexts/UserContext";
 
 const ImportDataNew = (props) => {
   const [openBalance, setOpenBalance] = useState(0);
+  const [transactionOpenBalance, setTransactionOpenBalance] = useState(0);
   const [closeBalance, setCloseBalance] = useState(0);
   const [fileContent, setFileContent] = useState(null);
   const [newAccountId, setNewAccountId] = useState("");
   const [numberHeaders, setNumberHeaders] = useState(0);
-  const [accountID, setAccountID] = useState("");
   const [getAccNumber, setGetAccNumber] = useState(false);
   const [noOpenBalance, setNoOpenBalance] = useState(false);
   const [newOpenBalance, setNewOpenBalance] = useState(0);
@@ -57,26 +57,31 @@ const ImportDataNew = (props) => {
     setEditableHeaders,
     selectedCheckboxes,
     setSelectedCheckboxes,
+    currentAccNumber,
+    setCurrentAccNumber,
   } = useDataContext();
-
-  const cantEditArray = [
-    "ignore",
-    "account",
-    "account_id",
-    "amount1",
-    "amount2",
-    "balance",
-    "bank_code",
-    "category_code",
-    "date",
-    "day",
-    "description",
-    "extra",
-    "type",
-    "timestamp",
-    "id",
-  ];
-  const defaultWidth = "5rem";
+  // const [currentAccNumber, setCurrentAccNumber] = useState("");
+  const [possAccNo, setPossAccNo] = useState(null);
+  const [userAccounts, setUserAccounts] = useState([]);
+  const [accForDataModal, setAccForDataModal] = useState(false);
+  // const cantEditArray = [
+  //   "ignore",
+  //   "account",
+  //   "account_id",
+  //   "amount_dr",
+  //   "amount_cr",
+  //   "balance",
+  //   "bank_code",
+  //   "category_code",
+  //   "date",
+  //   "day",
+  //   "description",
+  //   "extra",
+  //   "type",
+  //   "timestamp",
+  //   "id",
+  // ];
+  // const defaultWidth = "5rem";
   const dateFormats = [
     "dd-MMM-yy",
     "dd MMM yy",
@@ -107,9 +112,74 @@ const ImportDataNew = (props) => {
         "Ignore will remove the column from the preview, it can be recovered by selecting a different header name" +
         "\n" +
         "\n" +
+        "If only one amount column use account_dr, if both amount columns are present use amount_dr for debits and amount_cr for credits" +
+        "\n" +
+        "\n" +
         "Headers are saved for account IDs. If your input file contains the account ID, the headers will be fetched for that account. You may still change them."
     );
   };
+
+  const getLastAccountNumber = async () => {
+    console.log("tedtestIMP getAccountsForUser: ...getLastAccountNumber");
+    let rec;
+    try {
+      rec = await db.users.where("id").equals(user.id).first();
+      return rec.last_account;
+    } catch (error) {
+      console.error("Error getting last account number", error);
+      return null;
+    }
+  };
+
+  useEffect(() => {
+    //returns all transaction accounts for this user
+    const getAccountsForUser = async () => {
+      try {
+        const accounts = await db.transactiondetails
+          .where({ user_id: user.id })
+          .toArray();
+        if (accounts && accounts.length > 0) {
+          let tmpAccNumber = await getLastAccountNumber();
+          if (tmpAccNumber) {
+            setCurrentAccNumber(tmpAccNumber);
+            setGetAccNumber(true);
+          } else setGetAccNumber(false);
+        }
+        return accounts.map((acc) => acc.account_id);
+      } catch (error) {
+        console.error("Error fetching transaction accounts", error);
+        return null; // or handle the error as needed
+      }
+    };
+    const fetchAccNumber = async () => {
+      setUserAccounts(await getAccountsForUser());
+    };
+
+    fetchAccNumber();
+  }, []);
+
+  useEffect(() => {
+    const getOpeningBalance = async () => {
+      try {
+        const accounts = await db.transactiondetails
+          .where({
+            user_id: user.id,
+            account_id: currentAccNumber.toString(),
+          })
+          .first();
+        console.log("tedtestBBB openingbalance accounts=", accounts);
+        if (accounts.openingbalance)
+          setTransactionOpenBalance(accounts.openingbalance);
+        console.log(
+          "tedtestBBB accounts.openingbalance=",
+          accounts.openingbalance
+        );
+      } catch (error) {
+        console.log("error getting opening balance", error);
+      }
+    };
+    getOpeningBalance();
+  }, [currentAccNumber]);
 
   function findPotentialAccountNumber(fieldsData) {
     const minLength = 6; // Assume a minimum length for account numbers
@@ -195,7 +265,7 @@ const ImportDataNew = (props) => {
     const handleFileChange = (event) => {
       setSelectedFile(event.target.files[0]);
       setEditableHeaders([]);
-      setAccountID(null);
+      // setAccountID(null); tedtest is this necessary
       let reader = new FileReader();
       reader.onload = handleFileRead;
       reader.readAsText(event.target.files[0]);
@@ -256,6 +326,7 @@ const ImportDataNew = (props) => {
   useEffect(() => {
     const getOpenCloseBalances = async () => {
       let noHeaders = 0;
+      let startBal;
       lines.forEach((record) => {
         let fields = record.data.split(delimiter);
         if (fields?.length > noHeaders) {
@@ -267,6 +338,7 @@ const ImportDataNew = (props) => {
             fields[count].toLowerCase().includes("opening balance")
           ) {
             setOpenBalance((-1 * parseFloat(fields[count - 1]))?.toFixed(2));
+            startBal = (-1 * parseFloat(fields[count - 1]))?.toFixed(2);
           }
           if (
             fields[count].toLowerCase().includes("close balance") ||
@@ -276,52 +348,111 @@ const ImportDataNew = (props) => {
           }
         }
       });
+      let chkbal = null;
+      try {
+        chkbal = await db.transactiondetails
+          .where("account_id")
+          .equals(currentAccNumber)
+          .first();
+      } catch (error) {
+        console.error("ERROR checking for opening balance:", error);
+      }
+      if (!chkbal) {
+        try {
+          await db.transactiondetails.add({
+            // id: user.id,
+            account_id: currentAccNumber,
+            openingbalance: startBal,
+          });
+          console.log("opening balance saved");
+        } catch (error) {
+          console.error("ERROR saving opening balance:", error);
+        }
+      } else if (!chkbal?.openingbalance) {
+        console.log(
+          "tedtestIMP chkbal=",
+          chkbal,
+          "   user.id=",
+          user.id,
+          "  currentAccNumber=",
+          currentAccNumber,
+          "  startBal=",
+          startBal
+        );
+        try {
+          await db.transactiondetails.update({
+            id: user.id,
+            account_id: currentAccNumber,
+            openingbalance: startBal,
+          });
+          console.log("opening balance saved");
+        } catch (error) {
+          console.error("ERROR saving opening balance:", error);
+        }
+      }
       setNumberHeaders(noHeaders);
     };
-    if (!lines) {
+    if (!lines || lines.length <= 0) {
       return;
     }
+    console.log("tedtestN lines=", lines);
     getOpenCloseBalances();
   }, [lines]);
 
   //getaccount_id
   useEffect(() => {
-    const getAccountId = async () => {
-      let foundAccNo = false;
+    //tedtest this looks at import file for possible account no.
+    //it must check this account no against the current account no from user.last_account
+    //if it matches do nothing
+    // if it does not match ask user if current account must be changed
+
+    function isNumeric(value) {
+      return !isNaN(value) && isFinite(value);
+    }
+
+    const getAccountNumber = async () => {
+      // let foundAccNo = false;
+      let potentialAccountNumber;
       for (const record of lines) {
         let fields = record.data.split(delimiter);
         if (fields.includes("ACC-NO")) {
-          const potentialAccountNumber = findPotentialAccountNumber(fields);
-          if (potentialAccountNumber) {
-            foundAccNo = true;
-            setAccountID(potentialAccountNumber);
-            break; // Exit the loop as soon as we find an account number
+          potentialAccountNumber = findPotentialAccountNumber(fields);
+          if (potentialAccountNumber !== currentAccNumber) {
+            setPossAccNo(potentialAccountNumber);
+            setAccForDataModal(true);
           }
+          break;
         }
       }
-      return foundAccNo;
     };
 
-    const checkAccountId = async () => {
-      let found = await getAccountId();
+    const checkAccountNumber = async () => {
+      //now we have currentAccNumber, do we need this? tedtest
+      let found = await getAccountNumber();
       if (!found) {
         setGetAccNumber(true);
       } else {
       }
     };
+
     if (!fileContent) {
       return;
     }
-    checkAccountId();
-  }, [fileContent]);
+    checkAccountNumber();
+  }, [lines]);
 
   //get Headers
   useEffect(() => {
+    console.log("tedtestB lines=", lines);
+    console.log("tedtestB numberHeaders=", numberHeaders);
+    console.log("tedtestB currentAccNumber=", currentAccNumber);
     const getHeaders = async () => {
       let dbaseHeaders = [];
       //already have accountID, just look for accountID in the headers table and populate the headers
       //if cannot find accountID then ask user
-      dbaseHeaders = await db.headers.where({ account_id: accountID }).first();
+      dbaseHeaders = await db.headers
+        .where({ account_id: currentAccNumber })
+        .first();
       if (dbaseHeaders) {
         // Populate dbaseHeaders with the headers element from the existing header
         const existHeaders = dbaseHeaders.headers;
@@ -329,16 +460,17 @@ const ImportDataNew = (props) => {
         setEditableHeaders(existHeaders);
       } else {
         window.alert(
-          `No headers for Account ID, ${accountID}, were found in the headers table. Please enter headers manually.`
+          `No headers for Account ID, ${currentAccNumber}, were found in the headers table. Please enter headers manually.`
         );
         setEditableHeaders(Array.from({ length: numberHeaders }, () => ""));
       }
     };
-    if (!accountID) {
+    if (!currentAccNumber) {
       return;
     }
-    getHeaders();
-  }, [accountID]);
+    if (lines && fileContent && numberHeaders > 0 && !accForDataModal)
+      getHeaders();
+  }, [currentAccNumber, numberHeaders, lines, accForDataModal]);
 
   const handleNewAccountId = (e) => {
     setNewAccountId(e.target.value);
@@ -351,8 +483,8 @@ const ImportDataNew = (props) => {
 
   const handleSubmitAccNo = (accId) => {
     if (validAccId(accId)) {
-      setAccountID(accId);
-      setGetAccNumber(false);
+      setCurrentAccNumber(accId);
+      // setGetAccNumber(false); //tdtest do we need this?
     } else {
       window.alert("Please enter valid account ID; cannot be empty string");
     }
@@ -375,7 +507,11 @@ const ImportDataNew = (props) => {
   };
 
   const DisplayLinesData = () => {
-    let tempArr = editableHeaders.filter((item) => item !== "ignore");
+    //if editableHeaders.length<=0 then we can try to calculate the number of columns by looking at lines.split by commas
+    let tempArr;
+    if (editableHeaders.length <= 0) {
+      tempArr = Array.from({ length: numberHeaders }, () => "");
+    } else tempArr = editableHeaders.filter((item) => item !== "ignore");
     return (
       <div style={{ marginBottom: "0.5rem" }}>
         <CheckboxTable
@@ -399,7 +535,7 @@ const ImportDataNew = (props) => {
   const getColumnHeaders = () => {
     return (
       <div className="indent-left-margin">
-        Account ID:{accountID}
+        {/* Account ID:{currentAccNumber} */}
         <table>
           <thead>
             <tr
@@ -514,7 +650,7 @@ const ImportDataNew = (props) => {
 
   const checkClosingBalances = () => {
     //we need the closeBal and we need to calculate the closingBalance so we need transactions with the amounts
-    let checkBal = getLatestBalance(accountID);
+    let checkBal = getLatestBalance(currentAccNumber);
     if (checkBal !== closeBalance) {
       alert(
         "Closing balance on import file does not match latestBalance on database. You will need to check your records"
@@ -527,55 +663,55 @@ const ImportDataNew = (props) => {
   };
 
   // check for Opening balance on Database
-  useEffect(() => {
-    const checkOpeningBalanceDatabase = async () => {
-      console.log("tedtestQ checkOpenBalanceDatabase");
-      let accountPresent = await accountExists(accountID);
-      if (accountPresent) {
-        //tedtest this still to be tested
-        let databaseClosingBalance = await getLatestBalance(accountID);
-        databaseClosingBalance = parseFloat(
-          parseFloat(databaseClosingBalance).toFixed(2)
-        );
-        let tempOpenBal = parseFloat(openBalance).toFixed(2);
-        if (databaseClosingBalance - tempOpenBal !== 0) {
-          setBalanceUnequal(true);
-          setdbaseBalance(databaseClosingBalance);
-          // setNoOpenBalance(true);
-          // setNewOpenBalance(openBalance);
-        } else setConfirmations(true);
-      } else {
-        setNoOpenBalance(true);
-        if (typeof openBalance === "string")
-          setNewOpenBalance(parseFloat(openBalance).toFixed(2));
-        else setNewOpenBalance(openBalance);
-      }
-    };
-    if (!accountID) return;
-    //  !openBalance || || !editableHeaders) return;
-    checkOpeningBalanceDatabase();
-  }, [openBalance, accountID]);
+  // useEffect(() => {
+  //   const checkOpeningBalanceDatabase = async () => {
+  //     let accountPresent = await accountExists(currentAccNumber);
+  //     // let accountPresent = await accountExists(accountID);
+  //     if (accountPresent) {
+  //       //tedtest this still to be tested
+  //       let databaseClosingBalance = await getLatestBalance(currentAccNumber);
+  //       databaseClosingBalance = parseFloat(
+  //         parseFloat(databaseClosingBalance).toFixed(2)
+  //       );
+  //       let tempOpenBal = parseFloat(openBalance).toFixed(2);
+  //       if (databaseClosingBalance - tempOpenBal !== 0) {
+  //         setBalanceUnequal(true);
+  //         setdbaseBalance(databaseClosingBalance);
+  //         // setNoOpenBalance(true);
+  //         // setNewOpenBalance(openBalance);
+  //       } else setConfirmations(true);
+  //     } else {
+  //       setNoOpenBalance(true);
+  //       if (typeof openBalance === "string")
+  //         setNewOpenBalance(parseFloat(openBalance).toFixed(2));
+  //       else setNewOpenBalance(openBalance);
+  //     }
+  //   };
+  //   if (!currentAccNumber) return;
+  //   //  !openBalance || || !editableHeaders) return;
+  //   checkOpeningBalanceDatabase();
+  // }, [openBalance, currentAccNumber]);
 
   const addNewTransactions = async (newTransactions) => {
     let closingBalance;
     let idArr = [];
-    let accountPresent = await accountExists(accountID);
+    let accountPresent = await accountExists(currentAccNumber);
     if (accountPresent) {
-      closingBalance = await getLatestBalance(accountID);
+      closingBalance = await getLatestBalance(currentAccNumber);
     } else {
       if (typeof newOpenBalance === "string")
         closingBalance = parseFloat(parseFloat(newOpenBalance).toFixed(2));
       else closingBalance = newOpenBalance;
     }
     for (const transaction of newTransactions) {
-      transaction.account_id = accountID;
+      transaction.account_id = currentAccNumber;
       // Skip transactions with invalid dates
       if (
         transaction?.date === "19700101" ||
         transaction?.date === "0" ||
         transaction?.date?.length < 6 ||
         transaction?.date?.length > 18 ||
-        transaction?.date === accountID
+        transaction?.date === currentAccNumber
       ) {
         continue;
       } else {
@@ -586,36 +722,89 @@ const ImportDataNew = (props) => {
       }
       //check for existence of amount2
       let twoCols = false;
-      if (editableHeaders.includes("amount2")) twoCols = true;
+      if (
+        editableHeaders.includes("amount_dr") &&
+        editableHeaders.includes("amount_cr")
+      )
+        twoCols = true;
       if (!twoCols) {
-        transaction.amount1 = parseFloat(transaction.amount1).toFixed(2);
-        if (isNaN(transaction.amount1)) {
-          transaction.amount1 = 0;
+        if (transaction.amount_dr > 0)
+          transaction.amount = parseFloat(transaction.amount).toFixed(2);
+        else
+          transaction.amount = parseFloat(
+            parseFloat(transaction.amount) * -1
+          ).toFixed(2);
+        if (isNaN(transaction.amount)) {
+          transaction.amount = 0;
         }
-        if (transaction.amount1 < 0) {
-          transaction.amount1 = -1 * transaction.amount1;
-          transaction.amount2 = 0;
-        } else {
-          transaction.amount2 = transaction.amount1;
-          transaction.amount1 = 0;
-        }
+        // if (transaction.amount1 < 0) {
+        //   transaction.amount1 = -1 * transaction.amount1;
+        //   transaction.amount2 = 0;
+        // } else {
+        //   transaction.amount2 = transaction.amount1;
+        //   transaction.amount1 = 0;
+        // }
       } else {
-        transaction.amount1 = parseFloat(transaction.amount1).toFixed(2);
-        if (isNaN(transaction.amount1)) {
-          transaction.amount1 = 0;
+        console.log(
+          "tedtestAA transaction.amount_dr=",
+          transaction.amount_dr,
+          "  transaction.amount_cr=",
+          transaction.amount_cr
+        );
+        if (transaction.amount_dr) {
+          console.log(
+            "tedtestAA parseFloat(transaction.amount_dr=",
+            parseFloat(transaction.amount_dr)
+          );
+          if (parseFloat(transaction.amount_dr) > 0) {
+            transaction.amount = parseFloat(
+              (parseFloat(transaction.amount_dr) * -1).toFixed(2)
+            );
+          } else if (parseFloat(transaction.amount_dr) < 0) {
+            transaction.amount = parseFloat(
+              parseFloat(transaction.amount_dr).toFixed(2)
+            );
+          }
+          console.log(
+            "tedtestAA in dr transaction.amount=",
+            transaction.amount
+          );
         }
-        transaction.amount2 = parseFloat(transaction.amount2).toFixed(2);
-        if (isNaN(transaction.amount2)) {
-          transaction.amount2 = 0;
+        if (transaction.amount_cr) {
+          console.log(
+            "tedtestAA parseFloat(transaction.amount_cr=",
+            parseFloat(transaction.amount_cr)
+          );
+          if (parseFloat(transaction.amount_cr) < 0) {
+            transaction.amount = parseFloat(
+              (
+                parseFloat(transaction.amount_cr) * -1 +
+                transaction.amount
+              ).toFixed(2)
+            );
+          } else if (parseFloat(transaction.amount_cr) > 0) {
+            transaction.amount = parseFloat(
+              (parseFloat(transaction.amount_cr) + transaction.amount).toFixed(
+                2
+              )
+            );
+          }
+          console.log(
+            "tedtestAA in cr transaction.amount=",
+            transaction.amount
+          );
+        }
+        transaction.amount = parseFloat(transaction.amount).toFixed(2);
+        if (isNaN(transaction.amount)) {
+          transaction.amount = 0;
         }
       }
-      // Find a duplicate record based on the given criteria
+      console.log("tedtestA transaction.amount=", transaction.amount);
       const duplicate = await db.transactions
         .where({
           date: transaction.date,
           description: transaction.description,
-          amount1: transaction.amount1,
-          amount2: transaction.amount2,
+          amount: transaction.amount,
         })
         .first();
       // If no duplicate found, add the transaction
@@ -636,8 +825,8 @@ const ImportDataNew = (props) => {
           transaction.category_description?.length > 0
         ) {
           let existingCategory = await db.category_descriptions
-            .where("description")
-            .equals(transaction.description)
+            .where("category_description")
+            .equals(transaction.category_description)
             .first();
           if (!existingCategory) {
             await db.category_descriptions.add({
@@ -649,13 +838,14 @@ const ImportDataNew = (props) => {
         }
         // if (!duplicate) {
         transaction.timestamp = new Date().toISOString();
-        let transactionAmount = transaction.amount2 - transaction.amount1;
-        closingBalance = parseFloat(
-          (closingBalance + transactionAmount).toFixed(2)
-        );
-        transaction.balance = closingBalance;
+        // let transactionAmount = transaction.amount2 - transaction.amount1;
+        // closingBalance = parseFloat(
+        //   (closingBalance + transactionAmount).toFixed(2)
+        // );
+        // transaction.balance = closingBalance;
         transaction.user_id = user.id;
         countRecords++;
+        console.log("tedtestA transaction=", transaction);
         let id = await db.transactions.add(transaction);
         idArr.push(id);
       } else countDuplicates++;
@@ -710,13 +900,38 @@ const ImportDataNew = (props) => {
             const valueWithoutSpaces = originalValue.replace(/\s+/g, "");
             // Attempt to parse the value as a float
             const parsedValue = parseFloat(valueWithoutSpaces);
-            //Determine if the value is a valid number
-            if (!isNaN(parsedValue)) {
-              // If it is a number, use the parsed value
-              entry[header] = parsedValue;
-            } else {
-              // If it's not a number, retain the original string
-              entry[header] = originalValue;
+            if (header === "amount_dr" || header === "amount_cr") {
+              if (!isNaN(parsedValue)) {
+                // If it is a number, use the parsed value
+                if (header === "amount_dr")
+                  entry["amount"] = parseFloat((parsedValue * -1).toFixed(2));
+                else entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
+              }
+              // else {
+              //   // If it's not a number, retain the original string
+              //   entry["amount"] = originalValue;
+              //   console.log("tedtestPRR2 entry[amount]=", entry["amount"]);
+              // }
+            }
+            // else if (header === "amount_cr") {
+            //   console.log("tedtestRR header = AMOUNTCR:", header);
+            //   if (!isNaN(parsedValue)) {
+            //     // If it is a number, use the parsed value
+            //     entry["amount"] = parseFloat(parsedValue.toFixed(2));
+            //   } else {
+            //     // If it's not a number, retain the original string
+            //     entry["amount"] = originalValue;
+            //   }
+            // }
+            else {
+              //Determine if the value is a valid number
+              if (!isNaN(parsedValue)) {
+                // If it is a number, use the parsed value
+                entry[header] = parsedValue;
+              } else {
+                // If it's not a number, retain the original string
+                entry[header] = originalValue;
+              }
             }
           } else entry[header] = dataValues[index];
         }
@@ -774,16 +989,54 @@ const ImportDataNew = (props) => {
     }
   };
 
+  // const getLastAccountNumber = async () => {
+  //   let rec;
+  //   try {
+  //     rec = await db.users.where("id").equals(user.id).first();
+  //     return rec.last_account;
+  //   } catch (error) {
+  //     console.error("Error getting last account number", error);
+  //   }
+  // };
+
+  // useEffect(() => {
+  //   //returns all transaction accounts for this user
+  //   const getAccountsForUser = async () => {
+  //     try {
+  //       const accounts = await db.transactiondetails
+  //         .where({ user_id: user.id })
+  //         .toArray();
+
+  //       if (accounts && accounts.length > 0) {
+  //         let tmpAccNumber = await getLastAccountNumber();
+  //         setCurrentAccNumber(tmpAccNumber);
+  //       }
+  //       return accounts.map((acc) => acc.account_id);
+  //     } catch (error) {
+  //       console.error("Error fetching transaction accounts", error);
+  //       return null; // or handle the error as needed
+  //     }
+  //   };
+  //   const fetchAccNumber = async () => {
+  //     setUserAccounts(await getAccountsForUser());
+  //   };
+
+  //   fetchAccNumber();
+  // }, []);
+
+  useEffect(() => {
+    console.log("tedtestIMPORT currentAccNo=", currentAccNumber);
+  }, [currentAccNumber]);
+
   const reInitialise = () => {
-    setConfirmations(false);
     setSelectedFile(null);
     setFileContent(null);
     setOpenBalance(0);
     setCloseBalance(0);
     setNewAccountId("");
     setNumberHeaders(0);
-    setAccountID("");
-    setGetAccNumber(false);
+    // setAccountID("");
+    // setGetAccNumber(false); //tedtest do we need this?
     setNoOpenBalance(false);
     setNewOpenBalance(0);
     setConfirmations(false);
@@ -829,7 +1082,7 @@ const ImportDataNew = (props) => {
         .catch((error) => {
           alert("Error adding transactions:", error);
         });
-      addOrUpdateHeaders(accountID, editableHeaders);
+      addOrUpdateHeaders(currentAccNumber, editableHeaders);
     } else alert("Invalid headers. Please select valid headers.");
   };
 
@@ -867,8 +1120,8 @@ const ImportDataNew = (props) => {
             "type",
             "description",
             "category_description",
-            "amount1",
-            "amount2",
+            "amount_dr",
+            "amount_cr",
             "balance",
           ];
 
@@ -942,6 +1195,10 @@ const ImportDataNew = (props) => {
     else if (balanceUnequal) setBalanceUnequal(false);
   };
 
+  const handleCloseAccModal = () => {
+    // setAccForDataModal(false);
+  };
+
   const handleBlur = async (e, index, updatedTransactions, key) => {
     const item = updatedTransactions[index];
     if (originalValue[index] && originalValue[index][key] !== item[key]) {
@@ -979,14 +1236,26 @@ const ImportDataNew = (props) => {
     setFixOpenBal(true);
   };
 
+  const handleChangeCurrAccNo = () => {
+    setCurrentAccNumber(possAccNo);
+    setAccForDataModal(false);
+  };
+
+  const handleNewCurrAccNo = () => {
+    alert(
+      "use dropdown menu on Account No. and select New to enter new accoutn number"
+    );
+    setAccForDataModal(false);
+  };
+
   return (
     <div>
       <FileUpload></FileUpload>
-      {getAccNumber && (
+      {!getAccNumber && ( //put getaccnumber here but tie it to no current account number
         <Modals
           title="Account number"
-          onClose={() => setGetAccNumber(false)}
-          onClickOutside={() => setGetAccNumber(false)}
+          onClose={() => setGetAccNumber(true)}
+          onClickOutside={() => setGetAccNumber(true)}
           footer={
             <div>
               <button
@@ -1020,7 +1289,7 @@ const ImportDataNew = (props) => {
           ></input>
         </Modals>
       )}
-      {fileContent && accountID && accountID.length > 0 && (
+      {fileContent && currentAccNumber && currentAccNumber.length > 0 && (
         <div className="indent-left-margin" style={{ width: "100%" }}>
           <b>File Content:</b>
           <pre
@@ -1057,7 +1326,7 @@ const ImportDataNew = (props) => {
                 title="Only active when opening balance exists"
                 className="main_buttons"
                 onClick={handleSave}
-                disabled={!confirmations}
+                disabled={!editableHeaders || !lines || !transactionOpenBalance}
               >
                 <FaRegSave size={iconSize} style={{ marginRight: "0.5rem" }} />
                 Save
@@ -1089,7 +1358,7 @@ const ImportDataNew = (props) => {
           </div>
         </div>
       )}
-      {(noOpenBalance || balanceUnequal) && (
+      {/* {(noOpenBalance || balanceUnequal) && (
         <Modals
           // noBckgrnd={true}
           title={
@@ -1128,11 +1397,11 @@ const ImportDataNew = (props) => {
           {noOpenBalance && (
             <div>
               <p>
-                No closing balance was found for account {accountID} on the
-                database. The closing balance on the database is used as a check
-                against the opening balance on the import file. Please enter
-                opening balance. (if a balance exists in the import file it will
-                appear below)
+                No closing balance was found for account {currentAccNumber} on
+                the database. The closing balance on the database is used as a
+                check against the opening balance on the import file. Please
+                enter opening balance. (if a balance exists in the import file
+                it will appear below)
               </p>
               <label className="modal-label-new">Enter opening balance</label>
               <input
@@ -1163,7 +1432,7 @@ const ImportDataNew = (props) => {
             </p>
           )}
         </Modals>
-      )}
+      )} */}
       {loadedTransactions && loadedTransactions?.length > 0 && dataSaved && (
         <div className="display-container">
           {/* {loadedTransactions && loadedTransactions?.length > 0 ? ( */}
@@ -1174,15 +1443,15 @@ const ImportDataNew = (props) => {
             descriptions for certain descriptions. Please edit the categories
             here if they are incorrect and fill in missing descriptions.
           </p>
-          <EditTableNew
-            checkedTransactions={setCheckedTransactions}
+          <EditTable
             transactions={loadedTransactions}
             setTransactions={setEditedTrans}
+            checkedTransactions={setCheckedTransactions}
             handleBlur={handleBlur}
             handleFocus={handleFocus}
-            colWidthArr={colWidths}
-            headers={uniqueKeys}
-            cantEditArray={cantEditArray}
+            // colWidthArr={colWidths}
+            // headers={uniqueKeys}
+            // cantEditArray={cantEditArray}
           />
           <button
             className="main_buttons"
@@ -1205,6 +1474,63 @@ const ImportDataNew = (props) => {
             Save
           </button>
         </div>
+      )}
+      {accForDataModal && (
+        <Modals
+          title="Account number"
+          onClose={
+            () => handleCloseAccModal()
+            // noOpenBalance ? setNoOpenBalance(false) : setBalanceUnequal(false)
+          }
+          footer={
+            <div>
+              <button
+                className="UI-button-service"
+                type="button"
+                onClick={() => {
+                  setAccForDataModal(false);
+                }}
+              >
+                Proceed
+              </button>
+              <button
+                className="UI-button-service"
+                type="button"
+                onClick={() => {
+                  handleChangeCurrAccNo();
+                }}
+              >
+                Change
+              </button>
+              <button
+                className="UI-button-service"
+                type="button"
+                onClick={() => {
+                  handleNewCurrAccNo();
+                }}
+              >
+                New
+              </button>
+            </div>
+          }
+        >
+          <div>
+            <p>
+              The current account number selected, {currentAccNumber} does not
+              match an account number found in the import file, {possAccNo}
+            </p>
+            <p>
+              proceed with current account number - {currentAccNumber} - click
+              Proceed
+            </p>
+            <p>
+              {" "}
+              or change current account number to match import file account
+              number {possAccNo} - click Change
+            </p>
+            <p>or enter a new account number - click New</p>
+          </div>
+        </Modals>
       )}
     </div>
   );

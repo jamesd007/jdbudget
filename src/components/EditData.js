@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import "../styles/EditStyles.css";
 import "../styles/MainStyles.css";
 import {
@@ -9,6 +9,7 @@ import {
 import EditTable from "../utils/EditTable";
 import { FaRegTrashAlt, FaRegSave } from "react-icons/fa";
 import Modals from "../utils/Modals";
+import { useDataContext } from "../providers/DataProvider";
 
 const EditData = () => {
   const [allTrans, setAllTrans] = useState([]);
@@ -16,6 +17,7 @@ const EditData = () => {
   const iconSize = 20;
   const [deleteConfirm, setDeleteConfirm] = useState(false);
   const [originalValue, setOriginalValue] = useState({});
+  const { currentAccNumber } = useDataContext();
   const warningText = `
   WARNING
   Selected data is deleted from your database.
@@ -26,9 +28,8 @@ const EditData = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const transactions = await getAllTransactions();
+        const transactions = await getAllTransactions(currentAccNumber);
         setAllTrans(transactions);
-        console.log("Fetched transactions:", transactions);
       } catch (error) {
         console.error("Error retrieving transactions:", error);
       }
@@ -38,7 +39,7 @@ const EditData = () => {
   }, []);
 
   // useEffect(() => {
-  //   getAllTransactions()
+  //   getAllTransactions(currentAccNumber)
   //     .then((item) => {
   //       setAllTrans(item);
   //     })
@@ -51,7 +52,7 @@ const EditData = () => {
 
   // const fetchAllTrans = async () => {
   //   // Fetch transactions from the database and set to allTrans
-  //   const transactions = await getAllTransactions();
+  //   const transactions = await getAllTransactions(currentAccNumber);
   //   setAllTrans(transactions);
   // };
 
@@ -65,7 +66,7 @@ const EditData = () => {
 
       // Fetch updated transactions after deletion
       try {
-        const updatedTransactions = await getAllTransactions();
+        const updatedTransactions = await getAllTransactions(currentAccNumber);
         setAllTrans(updatedTransactions);
         console.log("Updated transactions:", updatedTransactions);
       } catch (error) {
@@ -82,7 +83,7 @@ const EditData = () => {
   //       await deleteTransaction(id);
   //     }
 
-  //     getAllTransactions()
+  //     getAllTransactions(currentAccNumber)
   //       .then((item) => {
   //         setAllTrans(item);
   //       })
@@ -91,7 +92,7 @@ const EditData = () => {
   //       });
   //     setCheckedTransactions([]);
   //     // Refresh the transactions list
-  //     // const transactions = await getAllTransactions();
+  //     // const transactions = await getAllTransactions(currentAccNumber);
   //     // setAllTrans(transactions);
   //     // await fetchAllTrans();
   //   }
@@ -123,7 +124,7 @@ const EditData = () => {
     }
 
     try {
-      const updatedData = await getAllTransactions();
+      const updatedData = await getAllTransactions(currentAccNumber);
       setAllTrans(updatedData);
       console.log("Updated transactions:", updatedData);
     } catch (error) {
@@ -139,7 +140,7 @@ const EditData = () => {
   //   }
 
   //   try {
-  //     const updatedTransactions = await getAllTransactions();
+  //     const updatedTransactions = await getAllTransactions(currentAccNumber);
   //     setAllTrans(updatedTransactions);
   //     console.log("Updated transactions:", updatedTransactions);
   //   } catch (error) {

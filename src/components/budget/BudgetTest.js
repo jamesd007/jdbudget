@@ -1,5 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import "./BudgetTest.css";
+// import "../styles/Budget.module.css";
 import { useDataContext } from "../../providers/DataProvider";
 import { UserContext } from "../../contexts/UserContext";
 import db from "../../store/Dexie";
@@ -94,6 +95,7 @@ const BudgetTest = () => {
   }, [startMonth, displayYear]);
 
   useEffect(() => {
+    //returns all budgets for this user
     const getBudgetsForUser = async () => {
       try {
         const budgets = await db.budgetdetails
@@ -104,8 +106,6 @@ const BudgetTest = () => {
           let tmpBudgetName = await getLastBudgetName();
           setCurrentBudgetName(tmpBudgetName);
         }
-        // setCurrentBudgetName(budgets[0]?.name);
-        //tedtest is this right, we should look for last used budget, which is in users table
         return budgets.map((budget) => budget.name);
       } catch (error) {
         console.error("Error fetching budgets", error);

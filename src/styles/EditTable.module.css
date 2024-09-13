@@ -1,0 +1,112 @@
+.tableinput {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+  line-height: 1; /* Adjusts the line height */
+  height: 100%; /* Makes the input fill the height of the cell */
+}
+
+.edittable tr {
+  height: auto; /* Let the row height adjust automatically */
+}
+
+.tablecontainer {
+  overflow: auto;
+  max-height: 100%;
+}
+
+.table {
+  border-collapse: collapse;
+  table-layout: fixed; /* Ensures that the widths are fixed */
+  width: 100%;
+}
+
+.table th,
+.table td {
+  padding: 0;
+  margin: 0;
+  border: 1px solid #ddd;
+  line-height: 1;
+}
+
+.table td input {
+  margin: 0;
+  padding: 0;
+  line-height: 1;
+}
+
+.table th {
+  position: sticky;
+  top: 0;
+  background: #fff;
+}
+
+thead th {
+  position: sticky;
+  top: 0;
+  background-color: white; /* or another background color */
+  z-index: 1;
+}
+
+th,
+td {
+  padding: 0;
+  margin: 0;
+  text-align: left;
+  /* width: 150px; Set specific width for proper alignment */
+  line-height: 1;
+}
+thead tr {
+  border-bottom: 2px solid darkslategray;
+}
+
+tbody tr:nth-child(odd) {
+  background-color: #f2f2f2; /* Optional: add row striping for readability */
+}
+
+.tablebody {
+  max-height: 68vh;
+  overflow: auto;
+}
+
+.editcheckbox {
+  font-size: 0.8rem;
+  width: 1.2rem;
+}
+
+.date {
+  width: 6.5rem;
+  font-family: Arial, sans-serif;
+}
+
+.day {
+  width: 2rem;
+}
+
+.description {
+  width: 14rem;
+  min-width: 14rem;
+}
+
+.category {
+  width: 8rem;
+}
+
+.dr {
+  width: 5.5rem;
+  text-align: right;
+}
+
+.cr {
+  width: 5.5rem;
+  text-align: right;
+}
+
+.balance {
+  width: 6rem;
+  text-align: right;
+  min-width: 6rem;
+}

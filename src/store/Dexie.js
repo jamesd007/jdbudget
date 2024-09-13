@@ -3,12 +3,13 @@ import Dexie from "dexie";
 const db = new Dexie("BudgetAppDB");
 db.version(4).stores({
   users:
-    "++id,user_id,username,hashedPassword,email,address, telephone,last_budget",
+    "++id,username,hashedPassword,email,address, telephone,last_budget,last_account",
   budgetdetails: "++id,user_id,name,type,lock,year,startmonth,openingbalance",
   budgettransactions:
     "++id,user_id,name,date,amount,category,description,repeat_options,growth_options,extras",
+  transactiondetails: "++id,user_id,account_id,openingbalance",
   transactions:
-    "++id,user_id,account_id,date,day,type,description,category_code,category_description,amount1,amount2,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
+    "++id,user_id,account_id,date,day,type,description,category_code,category_description,amount,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
   headers: "++id,user_id,account_id,headers",
   category_descriptions:
     "++id,user_id,description,category_code,category_description",
@@ -92,9 +93,18 @@ async function deleteBudget(id) {
   }
 }
 
-async function getAllTransactions() {
+async function getAllTransactions(account_id) {
+  console.log(
+    "account_id:",
+    account_id,
+    "  typeof account_id=",
+    typeof account_id
+  );
   try {
-    const transactions = await db.transactions.toArray();
+    const transactions = await db.transactions
+      .where("account_id")
+      .equals(account_id)
+      .toArray();
     return transactions;
   } catch (error) {
     console.error("Error getting transactions:", error);

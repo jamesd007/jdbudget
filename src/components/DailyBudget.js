@@ -2,6 +2,7 @@ import React, { useState, useEffect, useContext, useRef } from "react";
 import dayjs from "dayjs";
 import Modals from "../utils/Modals";
 import "../styles/Budget.css";
+import styles from "../styles/Budget.module.css";
 import "../styles/Modals.css";
 import "../styles/MainStyles.css";
 import db from "../store/Dexie";
@@ -226,9 +227,9 @@ const DailyBudget = () => {
             value={budgetData.category || ""}
           >
             {/* <option disabled selected value="">
-              {" "}
-              -- select an option --{" "}
-            </option> */}
+            {" "}
+            -- select an option --{" "}
+          </option> */}
             {filteredCategories.map((catRec) => (
               // <option key={catRec.id} value={catRec.id}>
               <option key={catRec.id} value={catRec.category_description}>
@@ -1216,153 +1217,160 @@ const DailyBudget = () => {
   }, [allBudgets]);
 
   return (
-    <div>
+    <div className={styles.tablecontainer}>
       {/* { */}
       {/* !currentBudgetName || currentBudgetName === "" ? (
          <BudgetSelect />
        ) : ( */}
-      <div style={{ marginLeft: "1rem", maxHeight: "66vh" }}>
-        <div className="table-header">
-          <table className="table">
-            <thead>
-              <tr>
-                <th className="date">Date</th>
-                <th className="day">Day</th>
-                <th className="description">Description</th>
-                <th className="category">Category</th>
-                <th className="dr">Dr</th>
-                <th className="cr">Cr</th>
-                <th className="balance">Balance</th>
-              </tr>
-            </thead>
-          </table>
-        </div>
-        <div className="table-body">
-          <table className="table">
-            <tbody>
-              <tr>
-                <td className="date"></td>
-                <td className="day"></td>
-                <td className="description">Opening Balance</td>
-                <td className="category"></td>
-                <td className="dr"></td>
-                <td className="cr"></td>
-                <td className="balance">{(startBalance || 0.0).toFixed(2)}</td>
-              </tr>
-              {calendar.map((dateObj, index) => {
-                let dayRecords = [];
-                const date = getDateFromObject(dateObj);
-                dayRecords = getDaysRecords(formatDate(date, "DD MMM YYYY"));
-                const formattedDate = formatDate(date, "DD MMM YYYY");
-                const isLastViewedDate = formattedDate === lastViewedDate;
-                // const isCurrentDate =
-                //   formattedDate === formatDate(new Date(), "DD MMM YYYY");
-                return (
-                  <tr
-                    key={index}
-                    ref={
-                      isLastViewedDate
-                        ? lastViewedDateRef
-                        : // : isCurrentDate
-                          // ? currentDateRef
-                          null
-                    }
+      {/* <div
+        
+        // style={{ maxHeight: "66vh" }}
+      > */}
+      <div
+      // className={styles.tableheader}
+      >
+        <table className={styles.table}>
+          <thead>
+            <tr>
+              <th className={styles.date}>Date</th>
+              <th className={styles.day}>Day</th>
+              <th className={styles.description}>Description</th>
+              <th className={styles.category}>Category</th>
+              <th className={styles.dr}>Dr</th>
+              <th className={styles.cr}>Cr</th>
+              <th className={styles.balance}>Balance</th>
+            </tr>
+          </thead>
+          {/* </table> */}
+          {/* </div> */}
+          {/* <div className={styles.tablebody}>
+          <table className={styles.table}> */}
+          <tbody>
+            <tr>
+              <td className={styles.date}></td>
+              <td className={styles.day}></td>
+              <td className={styles.description}>Opening Balance</td>
+              <td className={styles.category}></td>
+              <td className={styles.dr}></td>
+              <td className={styles.cr}></td>
+              <td className={styles.balance}>
+                {(startBalance || 0.0).toFixed(2)}
+              </td>
+            </tr>
+            {calendar.map((dateObj, index) => {
+              let dayRecords = [];
+              const date = getDateFromObject(dateObj);
+              dayRecords = getDaysRecords(formatDate(date, "DD MMM YYYY"));
+              const formattedDate = formatDate(date, "DD MMM YYYY");
+              const isLastViewedDate = formattedDate === lastViewedDate;
+              // const isCurrentDate =
+              //   formattedDate === formatDate(new Date(), "DD MMM YYYY");
+              return (
+                <tr
+                  key={index}
+                  ref={
+                    isLastViewedDate
+                      ? lastViewedDateRef
+                      : // : isCurrentDate
+                        // ? currentDateRef
+                        null
+                  }
+                >
+                  <td className={styles.date}>{formattedDate}</td>
+                  <td className={styles.day}>{getDayOfWeek(date)}</td>
+                  <td
+                    className={styles.description}
+                    style={{ position: "relative" }}
                   >
-                    <td className="date">{formattedDate}</td>
-                    <td className="day">{getDayOfWeek(date)}</td>
-                    <td
-                      className="description"
-                      style={{ position: "relative" }}
+                    <div
+                      style={{
+                        minWidth: "60px",
+                        minHeight: "20px",
+                      }}
                     >
+                      {dayRecords?.map((item, idx) => (
+                        <div
+                          className="dayRecords"
+                          style={{ cursor: "pointer" }}
+                          key={idx}
+                          onClick={() => handleEditRec(item.date, item, idx)}
+                        >
+                          {item.description}
+                        </div>
+                      ))}
+                      {dayRecords?.length > 0 ? (
+                        <button
+                          className="budget-add-button"
+                          style={{ cursor: "pointer" }}
+                          onClick={() =>
+                            handleOpenModal(formatDate(date, "DD MMM YYYY"))
+                          }
+                        >
+                          <FaPlus />
+                        </button>
+                      ) : (
+                        <div
+                          className={styles.description}
+                          style={{
+                            minHeight: "1.25rem",
+                            cursor: "pointer",
+                          }}
+                          onClick={() =>
+                            handleOpenModal(formatDate(date, "DD MMM YYYY"))
+                          }
+                        ></div>
+                      )}
+                    </div>
+                  </td>
+                  <td className={styles.category}>
+                    {dayRecords?.map((item, idx) => {
+                      return (
+                        <div className="dayRecords" key={idx}>
+                          {item.category}
+                        </div>
+                      );
+                    })}
+                  </td>
+                  <td className={styles.dr}>
+                    {dayRecords?.map((item, idx) => (
                       <div
-                        style={{
-                          minWidth: "60px",
-                          minHeight: "20px",
-                        }}
+                        className="dayRecords"
+                        key={idx}
+                        style={{ minHeight: "1em" }}
                       >
-                        {dayRecords?.map((item, idx) => (
-                          <div
-                            className="dayRecords"
-                            style={{ cursor: "pointer" }}
-                            key={idx}
-                            onClick={() => handleEditRec(item.date, item, idx)}
-                          >
-                            {item.description}
-                          </div>
-                        ))}
-                        {dayRecords?.length > 0 ? (
-                          <button
-                            className="budget-add-button"
-                            style={{ cursor: "pointer" }}
-                            onClick={() =>
-                              handleOpenModal(formatDate(date, "DD MMM YYYY"))
-                            }
-                          >
-                            <FaPlus />
-                          </button>
-                        ) : (
-                          <div
-                            className="description"
-                            style={{
-                              minHeight: "1.25rem",
-                              cursor: "pointer",
-                            }}
-                            onClick={() =>
-                              handleOpenModal(formatDate(date, "DD MMM YYYY"))
-                            }
-                          ></div>
-                        )}
+                        {item.amount <= 0 && (item.amount * -1).toFixed(2)}
                       </div>
-                    </td>
-                    <td className="category">
-                      {dayRecords?.map((item, idx) => {
-                        return (
-                          <div className="dayRecords" key={idx}>
-                            {item.category}
-                          </div>
-                        );
-                      })}
-                    </td>
-                    <td className="dr">
-                      {dayRecords?.map((item, idx) => (
-                        <div
-                          className="dayRecords"
-                          key={idx}
-                          style={{ minHeight: "1em" }}
-                        >
-                          {item.amount <= 0 && (item.amount * -1).toFixed(2)}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="cr">
-                      {dayRecords?.map((item, idx) => (
-                        <div
-                          className="dayRecords"
-                          key={idx}
-                          style={{ minHeight: "1em" }}
-                        >
-                          {item.amount >= 0 && item.amount}
-                        </div>
-                      ))}
-                    </td>
-                    <td className="balance">
-                      {calculatedBalances[index]?.map((balance, idx) => (
-                        <div
-                          className="dayRecords"
-                          key={idx}
-                          style={{ minHeight: "1em" }}
-                        >
-                          {balance}
-                        </div>
-                      ))}
-                    </td>
-                  </tr>
-                );
-              })}
-            </tbody>
-          </table>
-        </div>
+                    ))}
+                  </td>
+                  <td className={styles.cr}>
+                    {dayRecords?.map((item, idx) => (
+                      <div
+                        className="dayRecords"
+                        key={idx}
+                        style={{ minHeight: "1em" }}
+                      >
+                        {item.amount >= 0 && item.amount}
+                      </div>
+                    ))}
+                  </td>
+                  <td className={styles.balance}>
+                    {calculatedBalances[index]?.map((balance, idx) => (
+                      <div
+                        className="dayRecords"
+                        key={idx}
+                        style={{ minHeight: "1em" }}
+                      >
+                        {balance}
+                      </div>
+                    ))}
+                  </td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
       </div>
+      {/* </div> */}
       {/* } */}
       {isModalOpen && (
         <Modals

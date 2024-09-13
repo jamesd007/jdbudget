@@ -20,6 +20,7 @@ import CategoryDropdown from "./CategoryDropdown";
 import CategorySummaries from "./CategorySummaries";
 import possHeaders from "../data/possHeaders";
 import { getDatabaseSize } from "../store/Dexie";
+import { useDataContext } from "../providers/DataProvider";
 
 const Reports = () => {
   const [allTrans, setAllTrans] = useState([]);
@@ -32,6 +33,7 @@ const Reports = () => {
   const [categorySummaryOption, setCategorySummaryOption] = useState(false);
   const [colWidths, setColWidths] = useState([]);
   const [headersInfo, setHeadersInfo] = useState([]);
+  const { currentAccNumber } = useDataContext();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -174,7 +176,7 @@ const Reports = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const transactions = await getAllTransactions();
+        const transactions = await getAllTransactions(currentAccNumber);
         setAllTrans(transactions);
         console.log("Fetched transactions:", transactions);
         const keys = new Set();

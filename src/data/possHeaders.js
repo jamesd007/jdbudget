@@ -1,8 +1,8 @@
 const possHeaders = [
   { title: "ignore", colWidth: "0rem" },
   { title: "account_id", colWidth: "5rem" },
-  { title: "amount1", colWidth: "4rem" },
-  { title: "amount2", colWidth: "4rem" },
+  { title: "amount_dr", colWidth: "6rem" },
+  { title: "amount_cr", colWidth: "6rem" },
   { title: "balance", colWidth: "5rem" },
   { title: "bank_code", colWidth: "4.5rem" },
   { title: "category_code", colWidth: "7rem" },

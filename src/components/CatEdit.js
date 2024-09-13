@@ -24,7 +24,7 @@ const CatEdit = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        // const transactions = await getAllTransactions();
+        // const transactions = await getAllTransactions(needs an account_id here currentAccNo from dataprovider);
         // console.log("transactions :", transactions);
         // let tedtest = transactions.filter(
         //   (transaction) =>

@@ -22,6 +22,7 @@ const Categories = () => {
     const getTheCategories = async () => {
       try {
         let catRecs = await getAllCategories();
+        console.log("tedtestbbb catRecs=", catRecs);
         setAllCategories(catRecs);
         // setEditableRecord(catRecs);
       } catch (error) {
@@ -98,9 +99,23 @@ const Categories = () => {
     }
   };
 
+  useEffect(() => {
+    console.log("tedtestK allCategories=", allCategories);
+  }, [allCategories]);
+
   return (
     <div>
-      Categories
+      <div
+      // className="work-container"//tedtest why does this hide the table?
+      // style={{
+      //   backgroundColor: "lightsteelblue",
+      // }}
+      >
+        <span style={{ fontSize: "1.25rem", marginLeft: "1rem" }}>
+          Categories
+        </span>
+      </div>
+      {/* Categories */}
       {allCategories && (
         <table>
           <thead>

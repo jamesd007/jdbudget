@@ -30,13 +30,12 @@
   gap: 5px;
   right: 0%;
   bottom: 4%;
-  /* margin-left: 50%; */
-  /* transform: translate(-50%); */
+  margin-top: 1rem;
 }
 
 .main_buttons {
   height: 1.6rem;
-  width: fit-content;
+  /* width: fit-content; */
   background-color: lightblue;
   border: 1px solid darkblue;
   border-radius: 0.5rem;
