@@ -58,6 +58,7 @@ const DailyBudget = () => {
     date: currentDate,
     description: "",
     category: "",
+    transactiontype: "expenses",
     amount: 0,
     // Add other fields with initial values if needed
   });
@@ -104,7 +105,7 @@ const DailyBudget = () => {
   const [allBudgets, setAllBudgets] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const { currentBudgetName, setCurrentBudgetName } = useDataContext();
-  const [transactionType, setTransactionType] = useState("Expenses");
+  // const [transactionType, setTransactionType] = useState("expenses");
   const [recurYears, setRecurYears] = useState(1);
   const [yearlyRecurMonth, setYearlyRecurMonth] = useState();
   const [yearlyRecurDate, setYearlyRecurDate] = useState();
@@ -226,10 +227,6 @@ const DailyBudget = () => {
             }}
             value={budgetData.category || ""}
           >
-            {/* <option disabled selected value="">
-            {" "}
-            -- select an option --{" "}
-          </option> */}
             {filteredCategories.map((catRec) => (
               // <option key={catRec.id} value={catRec.id}>
               <option key={catRec.id} value={catRec.category_description}>
@@ -500,11 +497,7 @@ const DailyBudget = () => {
         let parsedAmount = parseFloat(amount);
 
         if (!isNaN(parsedAmount)) {
-          if (transactionType === "Expenses") {
-            budgetsAmount = (parsedAmount * -1).toFixed(2);
-          } else {
-            budgetsAmount = parsedAmount.toFixed(2);
-          }
+          budgetsAmount = parsedAmount.toFixed(2);
         } else {
           console.error("Parsed amount is NaN");
         }
@@ -570,6 +563,7 @@ const DailyBudget = () => {
           name: budgetData.name || "",
           type: budgetData.type || "",
           category: budgetData.category || "",
+          transactiontype: budgetData.transactiontype || "expenses",
           description: budgetData.description || "",
           date: budgetData.date || new Date(), // Set the default date to the current date
           amount: budgetsAmount || 0, // Assuming amount should be a number; default to 0
@@ -577,6 +571,7 @@ const DailyBudget = () => {
           growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
           extras: budgetData.extras || "", // Default to an empty string if not provided
         };
+        console.log("tedtest11 dataToSave=", dataToSave);
         handleRecurrence(dataToSave);
         handleCloseModal();
         resetVars();
@@ -587,6 +582,7 @@ const DailyBudget = () => {
           name: budgetData.name || "",
           type: budgetData.type || "",
           category: budgetData.category || "",
+          transactiontype: budgetData.transactiontype || "expenses",
           description: budgetData.description || "",
           date: budgetData.date || new Date(), // Set the default date to the current date
           amount: budgetsAmount || 0, // Assuming amount should be a number; default to 0
@@ -594,6 +590,7 @@ const DailyBudget = () => {
           growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
           extras: budgetData.extras || "", // Default to an empty string if not provided
         };
+        console.log("tedtest11 2. dataToSave=", dataToSave);
 
         // This should write data to the database
         if (editMode) {
@@ -612,6 +609,7 @@ const DailyBudget = () => {
             dataToSave.category,
             dataToSave.description,
             dataToSave.date,
+            dataToSave.transactiontype,
             dataToSave.amount,
             dataToSave.repeat_options,
             dataToSave.growth_options,
@@ -989,6 +987,7 @@ const DailyBudget = () => {
       budgetName: budgetName,
       date: formatDate(item.date, "DD MMM YYYY"),
       description: item.description,
+      transactiontype: item.transactiontype,
       category: item.category,
       amount: Math.abs(item.amount),
       repeat_options: item.repeat_options,
@@ -1078,9 +1077,9 @@ const DailyBudget = () => {
     getBudgetData();
   }, []);
 
-  const handleIncExp = (event) => {
-    setTransactionType(event.target.value);
-  };
+  // const handleIncExp = (event) => {
+  //   setTransactionType(event.target.value);
+  // };
 
   const handleFrequency = (e) => {
     setFrequency(e.target.value);
@@ -1332,15 +1331,18 @@ const DailyBudget = () => {
                     })}
                   </td>
                   <td className={styles.dr}>
-                    {dayRecords?.map((item, idx) => (
-                      <div
-                        className="dayRecords"
-                        key={idx}
-                        style={{ minHeight: "1em" }}
-                      >
-                        {item.amount <= 0 && (item.amount * -1).toFixed(2)}
-                      </div>
-                    ))}
+                    {dayRecords?.map((item, idx) => {
+                      console.log("tedtest9 item=", item);
+                      return (
+                        <div
+                          className="dayRecords"
+                          key={idx}
+                          style={{ minHeight: "1em" }}
+                        >
+                          {item.transactiontype === "expenses" && item.amount}
+                        </div>
+                      );
+                    })}
                   </td>
                   <td className={styles.cr}>
                     {dayRecords?.map((item, idx) => (
@@ -1349,7 +1351,7 @@ const DailyBudget = () => {
                         key={idx}
                         style={{ minHeight: "1em" }}
                       >
-                        {item.amount >= 0 && item.amount}
+                        {item.transactiontype === "income" && item.amount}
                       </div>
                     ))}
                   </td>
@@ -1395,7 +1397,7 @@ const DailyBudget = () => {
                 disabled={
                   !budgetData.description ||
                   !budgetData.category ||
-                  !transactionType ||
+                  !budgetData.transactiontype ||
                   (repeat && !frequency) ||
                   (frequency === "daily" && !repeatFreq) ||
                   (repeatFreq === "everyDay" && repeatFreqDays <= 0) ||
@@ -1534,10 +1536,16 @@ const DailyBudget = () => {
                 <input
                   type="radio"
                   id="income"
-                  name="transactionType"
-                  value="Income"
-                  checked={transactionType === "Income"}
-                  onChange={handleIncExp}
+                  name="transactiontype"
+                  value="income"
+                  checked={budgetData.transactiontype === "income"}
+                  onChange={(e) =>
+                    handleInputChange(
+                      currentDate,
+                      "transactiontype",
+                      e.target.value
+                    )
+                  }
                 />
                 Income
               </label>
@@ -1547,10 +1555,16 @@ const DailyBudget = () => {
                 <input
                   type="radio"
                   id="expenses"
-                  name="transactionType"
-                  value="Expenses"
-                  checked={transactionType === "Expenses"}
-                  onChange={handleIncExp}
+                  name="transactiontype"
+                  value="expenses"
+                  checked={budgetData.transactiontype === "expenses"}
+                  onChange={(e) =>
+                    handleInputChange(
+                      currentDate,
+                      "transactiontype",
+                      e.target.value
+                    )
+                  }
                 />
                 Expenses
               </label>

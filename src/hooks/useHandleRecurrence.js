@@ -886,9 +886,11 @@ const useHandleRecurrence = (setAllBudgets) => {
           let entry = {
             user_id: data.user_id || "default_user_id",
             budgetName: data.name || "",
-            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            description: data.description || "",
+            type: data.type || "",
             category: data.category || "",
+            description: data.description || "",
+            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
+            transactiontype: data.transactiontype || "expenses",
             amount: Math.abs(data.amount) || 0,
             repeat_options: data.repeat_options || {},
             growth_options: data.growth_options || {},
@@ -907,9 +909,11 @@ const useHandleRecurrence = (setAllBudgets) => {
           let entry = {
             user_id: data.user_id || "default_user_id",
             budgetName: data.name || "",
-            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            description: data.description || "",
+            type: data.type || "",
             category: data.category || "",
+            description: data.description || "",
+            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
+            transactiontype: data.transactiontype || "expenses",
             amount: Math.abs(data.amount) || 0,
             repeat_options: data.repeat_options || {},
             growth_options: data.growth_options || {},
@@ -928,9 +932,11 @@ const useHandleRecurrence = (setAllBudgets) => {
           let entry = {
             user_id: data.user_id || "default_user_id",
             budgetName: data.name || "",
-            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            description: data.description || "",
+            type: data.type || "",
             category: data.category || "",
+            description: data.description || "",
+            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
+            transactiontype: data.transactiontype || "expenses",
             amount: Math.abs(data.amount) || 0,
             repeat_options: data.repeat_options || {},
             growth_options: data.growth_options || {},
@@ -941,6 +947,7 @@ const useHandleRecurrence = (setAllBudgets) => {
         }
       }
     }
+
     return repeatedData;
   };
 

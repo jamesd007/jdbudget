@@ -1,7 +1,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import styles from "../styles/EditTable.module.css";
 import dayjs from "dayjs";
-import { getAllCategories } from "../store/Dexie";
+import { getAllCategories, updateTransaction } from "../store/Dexie";
 import CategoryModal from "./../components/categories/CategoryModal";
 import db from "../store/Dexie";
 import { useDataContext } from "../providers/DataProvider";
@@ -25,9 +25,8 @@ const EditTable = ({
   const { currentAccNumber, setCurrentAccNumber } = useDataContext();
   const { user } = useContext(UserContext);
   const [userAccounts, setUserAccounts] = useState([]);
-
-  // let continuousBalance = null;
-
+  const [currentIndex, setCurrentIndex] = useState(null);
+  const [currentId, setCurrentId] = useState(null);
   const months = [
     "January",
     "February",
@@ -42,6 +41,7 @@ const EditTable = ({
     "November",
     "December",
   ];
+  const incexpcats = ["income", "expenses"];
 
   const getLastAccountNumber = async () => {
     let rec;
@@ -78,10 +78,10 @@ const EditTable = ({
     fetchAccNumber();
   }, []);
 
-  const getDateFromObject = ({ day, month, year }) => {
-    const monthIndex = months.indexOf(month); // Convert month name to index
-    return new Date(year, monthIndex, day);
-  };
+  // const getDateFromObject = ({ day, month, year }) => {
+  //   const monthIndex = months.indexOf(month); // Convert month name to index
+  //   return new Date(year, monthIndex, day);
+  // };
 
   const getDayOfWeek = (date) => {
     return dayjs(date).format("ddd");
@@ -91,7 +91,14 @@ const EditTable = ({
     if (startBalance !== null && editableTransactions.length > 0) {
       let currentBalance = startBalance;
       const updatedTransactions = editableTransactions.map((transaction) => {
-        currentBalance += parseFloat(parseFloat(transaction.amount).toFixed(2));
+        if (transaction.transactiontype === "expenses")
+          currentBalance -= parseFloat(
+            parseFloat(transaction.amount).toFixed(2)
+          );
+        else
+          currentBalance += parseFloat(
+            parseFloat(transaction.amount).toFixed(2)
+          );
         return {
           ...transaction,
           balance: currentBalance.toFixed(2),
@@ -126,6 +133,7 @@ const EditTable = ({
   }, [currentAccNumber]);
 
   useEffect(() => {
+    console.log("tedtest5 useeffect setting editable transactions");
     setEditableTransactions(transactions);
   }, [transactions]);
 
@@ -143,46 +151,31 @@ const EditTable = ({
     checkedTransactions(selectedRows);
   }, [selectedRows]);
 
-  const handleEditTransaction = (id, updatedData) => {
-    setTransactionsWithBalance((prevTransactions) =>
-      prevTransactions.map((transaction) =>
-        transaction.id === id ? { ...transaction, ...updatedData } : transaction
-      )
-    );
-  };
+  // const handleEditTransaction = (id, updatedData) => {
+  //   setTransactionsWithBalance((prevTransactions) =>
+  //     prevTransactions.map((transaction) =>
+  //       transaction.id === id ? { ...transaction, ...updatedData } : transaction
+  //     )
+  //   );
+  // };
 
   const handleDataChange = (e, index, id) => {
     const { name, value } = e.target;
-    // const updatedData = { [name]: value };
-    // setTransactionsWithBalance((prevTransactions) =>
-    //   prevTransactions.map((transaction) =>
-    //     transaction.id === id
-    //       ? { ...transaction, ...[updatedData] }
-    //       : transaction
-    //   )
-    // );
-
+    console.log("tedtest8 name=", name, "   value=", value);
+    let newVal;
+    if (name === "amount" && typeof value === "string")
+      newVal = parseFloat(value);
+    else newVal = value;
+    console.log("tedtest8   newval=", newVal);
     const updatedTransactions = [...editableTransactions];
     updatedTransactions[index] = {
       ...updatedTransactions[index],
-      [name]: value,
+      [name]: newVal,
     };
     setEditableTransactions(updatedTransactions);
     setTransactions(updatedTransactions); // Update parent state
-
-    // setTransactionsWithBalance((prevTransactions) =>
-    //   prevTransactions.map((transaction) =>
-    //     transaction.id === id ? { ...transaction, ...updatedData } : transaction
-    //   )
-    // );
+    // setTransactionsWithBalance(updatedTransactions);
   };
-
-  // useLayoutEffect(() => {
-  // Restore the scroll position after the state has been updated and the component has re-rendered
-  // if (tableRef.current) {
-  //   tableRef.current.scrollTop = scrollPosition;
-  // }
-  // });
 
   const handleSelectAll = () => {
     if (selectedRows?.length === transactions?.length) {
@@ -192,29 +185,9 @@ const EditTable = ({
     }
   };
 
-  // const getColumnWidth = (columnIndex) => {
-  //   const cells = document.querySelectorAll(
-  //     `.editable-transactions tbody td:nth-child(${columnIndex + 1})`
-  //   );
-  //   let maxWidth = 0;
-  //   cells.forEach((cell) => {
-  //     maxWidth = Math.max(maxWidth, cell.getBoundingClientRect().width);
-  //   });
-  //   return `${maxWidth}px`;
+  // const formatDate = (date, format) => {
+  //   return dayjs(date).format(format);
   // };
-
-  // const generateGridTemplateColumns = () => {
-  //   const numColumns = 5; /* calculate the number of columns dynamically */
-  //   let columnsWidth = "";
-  //   for (let i = 0; i < numColumns; i++) {
-  //     columnsWidth += `minmax(${getColumnWidth(i)}, max-content) `;
-  //   }
-  //   return columnsWidth;
-  // };
-
-  const formatDate = (date, format) => {
-    return dayjs(date).format(format);
-  };
 
   useEffect(() => {
     //getExistingCategories from dbase
@@ -229,49 +202,45 @@ const EditTable = ({
     getTheCategories();
   }, [openCatModal]);
 
-  const handleCreateNewCategory = async (index) => {
+  const handleCreateNewCategory = async (index, id) => {
     setOpenCatModal(true);
-    return (
-      <CategoryModal //tedtest still to be programmed
-        title="Categories"
-        setOpenCatModal={setOpenCatModal}
-        db={db}
-        setCatDescription={(val) =>
-          handleCatInputChange("category_description", val, index)
-        }
-      />
-    );
+    setCurrentIndex(index);
+    setCurrentId(id);
   };
 
-  const handleCategoryChange = (e, index) => {
-    setSelectedCategory(e.target.value);
-    const { name, value } = e.target;
-    const updatedTransactions = [...editableTransactions];
-    updatedTransactions[index] = {
-      ...updatedTransactions[index],
-      category_description: e.target.value,
-    };
-    setTransactionsWithBalance(updatedTransactions);
-    setTransactions(updatedTransactions); // Update parent state
-  };
+  // const handleCategoryChange = (e, index) => {
+  //   setSelectedCategory(e.target.value);
+  //   const { name, value } = e.target;
+  //   const updatedTransactions = [...editableTransactions];
+  //   updatedTransactions[index] = {
+  //     ...updatedTransactions[index],
+  //     category_description: e.target.value,
+  //   };
+  //   setTransactionsWithBalance(updatedTransactions);
+  //   setTransactions(updatedTransactions); // Update parent state
+  // };
 
-  const handleInputChange = (e, field, value, index) => {
-    const updatedTransactions = [...editableTransactions];
+  const handleInputChange = async (field, value, index, id) => {
+    const updatedTransactions = [...transactionsWithBalance];
     updatedTransactions[index] = {
       ...updatedTransactions[index],
       [field]: value,
     };
-    setEditableTransactions(updatedTransactions);
+    // setTransactionsWithBalance(updatedTransactions);
+    setTransactions(updatedTransactions);
+    try {
+      let result = await updateTransaction(id, {
+        [field]: updatedTransactions[index][field],
+      });
+      if (result) {
+        console.log("updated Category successful");
+      }
+    } catch (error) {
+      console.error("Error adding new transaction:", error.message);
+    }
   };
 
-  const handleCatInputChange = (field, value, index) => {
-    setTransactionsWithBalance[index]((prevData) => ({
-      ...prevData,
-      [field]: value,
-    }));
-  };
-
-  const SearchableDropdown = ({ allCategories, index }) => {
+  const SearchableDropdown = ({ allCategories, index, id }) => {
     const [searchTerm, setSearchTerm] = useState("");
     const sortedCategories = [...allCategories].sort((a, b) =>
       a.category_description.localeCompare(b.category_description)
@@ -290,10 +259,8 @@ const EditTable = ({
     return (
       <div
         className={styles.category}
-        style={{
-          // width: "15rem",
-          marginBottom: "0.5rem",
-        }}
+        name={styles.category}
+        style={{ width: "100%" }}
       >
         <input
           style={{ display: "none" }}
@@ -303,29 +270,23 @@ const EditTable = ({
           onChange={handleSearchChange}
         />
         <select
-          style={{ width: "100%" }}
+          style={{ padding: "0.1rem" }}
           onChange={(e) => {
             const selectedValue = e.target.value;
             if (selectedValue === "new") {
-              handleCreateNewCategory(index);
+              handleCreateNewCategory(index, id);
             } else {
-              handleCategoryChange(e, index);
-              // handleInputChange(
-              //   e,
-              //   "category_description",
-              //   selectedValue,
-              //   index
-              // );
+              handleInputChange(
+                "category_description",
+                selectedValue,
+                index,
+                id
+              );
             }
           }}
           value={transactions[index].category_description || ""}
         >
-          {/* <option disabled selected value="">
-            {" "}
-            -- select an option --{" "}
-          </option> */}
           {filteredCategories.map((catRec) => (
-            // <option key={catRec.id} value={catRec.id}>
             <option key={catRec.id} value={catRec.category_description}>
               {catRec.category_description}
             </option>
@@ -353,12 +314,14 @@ const EditTable = ({
                 <th className={styles.day}>Day</th>
                 <th className={styles.description}>Description</th>
                 <th className={styles.category}>Category</th>
+                <th className={styles.incexp}>inc/exp</th>
                 <th className={styles.dr}>Dr</th>
                 <th className={styles.cr}>Cr</th>
                 <th className={styles.balance}>Balance</th>
               </tr>
             </thead>
             <tbody className="edittablebody">
+              {/* tedtest there is no editablebody */}
               <tr>
                 <td colSpan="8">
                   <input
@@ -375,6 +338,7 @@ const EditTable = ({
                 <td className={styles.day}></td>
                 <td className={styles.description}>Opening balance</td>
                 <td className={styles.category}></td>
+                <td className={styles.incexp}></td>
                 <td className={styles.dr}></td>
                 <td className={styles.cr}></td>
 
@@ -441,45 +405,33 @@ const EditTable = ({
                         />
                       </td>
                       <td //category"
-                        className={styles.category}
+                      // className={styles.category}
                       >
                         <SearchableDropdown
                           allCategories={allCategories}
                           index={index}
+                          id={item.id}
                         />
-                        {/* <select
-                        value={item.category_description}
-                        onChange={(e) => handleDataChange(e, index)}
-                        onFocus={(e) => handleFocus(e, index)}
-                        onBlur={(e) =>
-                          handleBlur(
-                            e,
-                            index,
-                            editableTransactions
-                          )
-                        }
-                      >
-                        <SearchableDropdown allCategories={allCategories} />
-                        <option value="" disabled>
-                          Select a category
-                        </option>
-                        {allCategories?.map((category) => (
-                          <option key={category} value={category}>
-                            {category}
-                          </option>
-                        ))}
-                      </select> */}
-                        {/* <input
-                        className={styles.category}
-                        type="text"
-                        name="category"
-                        value={item.category_description}
-                        onChange={(e) => handleDataChange(e, index)}
-                        onFocus={(e) => handleFocus(e, index)}
-                        onBlur={(e) =>
-                          handleBlur(e, index, editableTransactions)
-                        } */}
-                        {/* /> */}
+                      </td>
+                      <td className={styles.incexp}>
+                        <select
+                          name="transactiontype"
+                          onFocus={(e) => handleFocus(e, index)}
+                          onBlur={(e) =>
+                            handleBlur(e, index, editableTransactions)
+                          }
+                          onChange={(e) => {
+                            // const selectedValue = e.target.value;
+                            handleDataChange(e, index);
+                          }}
+                          value={item.transactiontype}
+                        >
+                          {incexpcats.map((option) => (
+                            <option key={option} value={option}>
+                              {option}
+                            </option>
+                          ))}
+                        </select>
                       </td>
                       <td //dr"
                         className={styles.dr}
@@ -489,7 +441,9 @@ const EditTable = ({
                           type="number"
                           name="amount"
                           value={
-                            item.amount < 0 && (item.amount * -1).toFixed(2)
+                            item.transactiontype === "expenses" &&
+                            // parseFloat(item.amount).toFixed(2)
+                            item.amount
                           }
                           onChange={(e) => handleDataChange(e, index)}
                           onFocus={(e) => handleFocus(e, index)}
@@ -504,9 +458,7 @@ const EditTable = ({
                           type="number"
                           name="amount"
                           value={
-                            item.amount &&
-                            item.amount > 0 &&
-                            parseFloat(parseFloat(item.amount).toFixed(2))
+                            item.transactiontype === "income" && item.amount
                           }
                           onChange={(e) => handleDataChange(e, index, item.id)}
                           onFocus={(e) => handleFocus(e, index)}
@@ -534,16 +486,21 @@ const EditTable = ({
         <p>No data found</p>
       )}
 
-      {/* {openCatModal && (
-        <CategoryModal //tedtest still to be programmed
+      {openCatModal && (
+        <CategoryModal
           title="Categories"
           setOpenCatModal={setOpenCatModal}
           db={db}
-          setCatDescription={(val) =>
-            handleCatInputChange("category_description", val)
-          }
+          setCatDescription={(val) => {
+            handleInputChange(
+              "category_description",
+              val,
+              currentIndex,
+              currentId
+            );
+          }}
         />
-      )} */}
+      )}
     </div>
   );
 };

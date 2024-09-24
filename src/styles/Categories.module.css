@@ -6,7 +6,7 @@
 .table {
   border-collapse: collapse;
   table-layout: fixed; /* Ensures that the widths are fixed */
-  width: 100%;
+  /* width: 100%; */
 }
 
 .table th,
@@ -52,43 +52,26 @@ tbody tr:nth-child(odd) {
   width: 1.2rem;
 }
 
-.date {
-  width: 5.8rem;
-  min-width: 5.8rem;
+.category_description {
+  width: 14rem;
 }
 
-.day {
-  width: 2rem;
+.category_code {
+  width: 10rem;
 }
 
 .description {
   width: 14rem;
 }
 
-.category {
-  width: 10rem;
-}
-
-.dr {
-  width: 8rem;
-}
-
-.cr {
-  width: 8rem;
-}
-
-.balance {
-  width: 8rem;
-}
-
-.budget_main_buttons {
+.categories_main_buttons {
   height: fit-content;
   width: fit-content;
   border: none;
   background: transparent;
   /* background-color: lightblue;
-  border: 1px solid darkblue;
-  border-radius: 0.5rem; */
+    border: 1px solid darkblue;
+    border-radius: 0.5rem; */
   display: flex;
   align-items: center;
   gap: 0.1rem;
@@ -101,7 +84,7 @@ tbody tr:nth-child(odd) {
   margin-left: 0.5rem;
 }
 
-.budget_button_grid {
+.categories_button_grid {
   /* position: relative; */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
@@ -110,4 +93,35 @@ tbody tr:nth-child(odd) {
   right: 0%;
   bottom: 4%;
   /* margin-top: 1rem; */
+}
+
+.category_button_grid {
+  /* position: relative; */
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
+  align-items: center;
+  gap: 5px;
+  right: 0%;
+  bottom: 4%;
+  /* margin-top: 1rem; */
+}
+
+.category_main_buttons {
+  height: fit-content;
+  width: fit-content;
+  border: none;
+  background: transparent;
+  /* background-color: lightblue;
+    border: 1px solid darkblue;
+    border-radius: 0.5rem; */
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  /* justify-content: space-around; */
+  cursor: pointer;
+  font-size: 0.8rem;
+  /* box-shadow: 2px 2px 4px rgba(0, 0, 0, 0.25); */
+  white-space: nowrap;
+  /* padding: 0.3rem 0.8rem; */
+  margin-left: 0.5rem;
 }

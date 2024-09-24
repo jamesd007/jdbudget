@@ -154,7 +154,7 @@
 
 .budget-add-button {
   position: absolute;
-  top: 0;
+  bottom: 0;
   right: 1.25rem;
   margin: 0;
   padding: 0;

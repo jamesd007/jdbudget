@@ -1,9 +1,20 @@
 .category-work-container {
-  position: absolute;
-  height: calc(96% - 2.5rem);
-  width: 96%;
-  left: 2%;
-  top: calc(2% + 2.5rem);
-  /* border: 1px solid black; */
-  /* tedtest remove this border later (or maybe not?) */
+  /* position: absolute; */
+  /* height: calc(96% - 2.5rem); */
+  /* width: 96%;
+  left: 2%; */
+  /* top: calc(2% + 2.5rem); */
+  background-color: lightsteelblue;
+  padding: 1rem;
+  width: 100vw;
+  /* position: absolute; */
+  height: 100vh;
+}
+
+.category-details-container {
+  width: 90%;
+  height: fit-content;
+  margin-left: 2.5%;
+  display: flex;
+  flex-direction: column;
 }

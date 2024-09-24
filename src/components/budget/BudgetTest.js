@@ -1,6 +1,6 @@
 import React, { useContext, useEffect, useRef } from "react";
 import "./BudgetTest.css";
-// import "../styles/Budget.module.css";
+import styles from "../../styles/Budget.module.css";
 import { useDataContext } from "../../providers/DataProvider";
 import { UserContext } from "../../contexts/UserContext";
 import db from "../../store/Dexie";
@@ -8,6 +8,11 @@ import { useState } from "react";
 import dayjs from "dayjs";
 import DailyBudget from "../../components/DailyBudget";
 import Modals from "../../utils/Modals";
+import { BiImport } from "react-icons/bi";
+import { BiExport } from "react-icons/bi";
+import { FaRegTrashAlt, FaRegSave } from "react-icons/fa";
+import { MdAddCircleOutline } from "react-icons/md";
+import { Link } from "react-router-dom";
 
 const BudgetTest = () => {
   const { currentBudgetName, setCurrentBudgetName } = useDataContext();
@@ -17,6 +22,7 @@ const BudgetTest = () => {
   const [displayYear, setDisplayYear] = useState(new Date().getFullYear());
   const [startMonth, setStartMonth] = useState(null);
   const [endDate, setEndDate] = useState(null);
+  const iconSize = 20;
   const months = [
     "January",
     "February",
@@ -37,12 +43,20 @@ const BudgetTest = () => {
   const [newBudgetName, setNewBudgetName] = useState("");
   const [openingBalance, setOpeningBalance] = useState(0);
   const budgetNameRef = useRef(null);
+  const budget_details_container = useRef(null);
+  const [detailsSpaceHgt, setDetailsSpaceHgt] = useState(0);
 
   useEffect(() => {
     if (openModal && budgetNameRef.current) {
       budgetNameRef.current.focus();
     }
   }, [openModal]);
+
+  useEffect(() => {
+    if (budget_details_container?.current) {
+      setDetailsSpaceHgt(budget_details_container?.current?.offsetHeight);
+    }
+  }, [budget_details_container?.current?.offsetHeight]);
 
   const getLastBudgetName = async () => {
     let rec;
@@ -186,100 +200,140 @@ const BudgetTest = () => {
   };
 
   return (
-    <div>
-      <div className="budget-main-container">
-        <div //container top
-          className="budget-details-container"
-        >
-          <div className="budget-details-rowone">
-            {/* <span>budget: {currentBudgetName}</span> */}
-            <label>
-              Budget:
-              <select
-                onChange={(e) => {
-                  const selectedValue = e.target.value;
-                  if (selectedValue === "new") {
-                    handleCreateNewBudget(); // This function should open a modal or prompt for budget creation
-                  } else {
-                    setCurrentBudgetName(selectedValue);
-                  }
-                }}
-                value={currentBudgetName}
-              >
-                {(userBudgets || []).map((budget) => {
-                  return (
-                    <option key={budget} value={budget}>
-                      {budget}
-                    </option>
-                  );
-                })}
-                <option value="new">New Budget</option>{" "}
-                {/* Add this option for creating a new budget */}
-                {/* <option disabled value="">
-                  {" "}
-                  -- select an option --{" "}
-                </option> */}
-                <option disabled selected value="">
-                  {" "}
-                  -- select an option --{" "}
+    <div className="work-container">
+      <span style={{ fontSize: "1.25rem", marginLeft: "1rem" }}>
+        Budget - Edit
+      </span>
+      {/* <div className="budget-main-container"> */}
+      <div //container top
+        className="budget-details-container"
+        ref={budget_details_container}
+      >
+        <div className="budget-details-rowone">
+          <label>
+            Budget:
+            <select
+              onChange={(e) => {
+                const selectedValue = e.target.value;
+                if (selectedValue === "new") {
+                  handleCreateNewBudget(); // This function should open a modal or prompt for budget creation
+                } else {
+                  setCurrentBudgetName(selectedValue);
+                }
+              }}
+              value={currentBudgetName}
+            >
+              {(userBudgets || []).map((budget) => {
+                return (
+                  <option key={budget} value={budget}>
+                    {budget}
+                  </option>
+                );
+              })}
+              <option value="new">New Budget</option>{" "}
+              {/* Add this option for creating a new budget */}
+              <option disabled selected value="">
+                {" "}
+                -- select an option --{" "}
+              </option>
+            </select>
+          </label>
+          <label>
+            View:
+            <select
+              onChange={(e) => setBudgetView(e.target.value)}
+              value={budgetView}
+            >
+              {["daily", "monthly"].map((view) => (
+                //tedtest these selections should be in a var
+                <option key={view} value={view}>
+                  {view}
                 </option>
-              </select>
-            </label>
-            <label>
-              View:
-              <select
-                onChange={(e) => setBudgetView(e.target.value)}
-                value={budgetView}
-              >
-                {["daily", "monthly"].map((view) => (
-                  //tedtest these selections should be in a var
-                  <option key={view} value={view}>
-                    {view}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label>
-              Year:
-              <select
-                onChange={(e) => setDisplayYear(e.target.value)}
-                value={displayYear}
-              >
-                {["2024", "2025"].map((year) => (
-                  //tedtest think this out, years to be got from data in database
-                  //need way to show next year and previous year when in budgets
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          Start month:
-          {startMonth && startMonth}
-          <div>
-            Budget period:
-            {getStartDate() && (
-              <span>
-                {getStartDate()} to{" "}
-                {getFinancialYearEndDate(new Date(getStartDate()))}
-              </span>
-            )}
-          </div>
+              ))}
+            </select>
+          </label>
+          <label>
+            Year:
+            <select
+              onChange={(e) => setDisplayYear(e.target.value)}
+              value={displayYear}
+            >
+              {["2024", "2025"].map((year) => (
+                //tedtest think this out, years to be got from data in database
+                //need way to show next year and previous year when in budgets
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          </label>
         </div>
-
-        <div //container workspace
-          className="budget-workspace-container"
-        >
-          {startMonth && displayYear ? (
-            <DailyBudget startFinYr={startMonth} year={displayYear} />
-          ) : currentBudgetName ? (
-            <p>Loading...</p> // or any other placeholder content
-          ) : (
-            <p>No current budget found...</p>
+        Start month:
+        {startMonth && startMonth}
+        <div>
+          Budget period:
+          {getStartDate() && (
+            <span>
+              {getStartDate()} to{" "}
+              {getFinancialYearEndDate(new Date(getStartDate()))}
+            </span>
           )}
         </div>
       </div>
+
+      <div //container workspace
+        className="budget-workspace-container"
+        style={{
+          height:
+            detailsSpaceHgt > 0
+              ? `calc(100vh - ${detailsSpaceHgt} - 5rem)`
+              : "calc(100vh - 10rem)",
+        }}
+      >
+        <div
+          className={styles.budget_button_grid}
+          style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
+        >
+          {/* <button
+            className={styles.budget_main_buttons}
+            // disabled={checkedTransactions?.length <= 0}
+            // onClick={() => setDeleteConfirm(true)}
+          >
+            <FaRegTrashAlt size={iconSize * 0.9} />
+            Delete
+          </button> */}
+          {/* <button
+            className={styles.budget_main_buttons}
+            disabled={checkedTransactions?.length <= 0}
+            onClick={() => setAddEntry(true)}
+          >
+            <MdAddCircle size={24} />
+            <MdAddCircleOutline size={24} />
+            Add
+          </button> */}
+          <Link to="/import" className={styles.budget_main_buttons}>
+            <BiImport size={24} />
+            {/* <FaFileImport size={20} /> */}
+            Import
+          </Link>
+          <button
+            className={styles.budget_main_buttons}
+            // onClick={() => handleExport()}
+          >
+            <BiExport size={24} />
+            {/* <FaFileExport size={20} /> */}
+            Export
+          </button>
+        </div>
+        {startMonth && displayYear ? (
+          <DailyBudget startFinYr={startMonth} year={displayYear} />
+        ) : currentBudgetName ? (
+          <p>Loading...</p> // or any other placeholder content
+        ) : (
+          <p>No current budget found...</p>
+        )}
+      </div>
+      {/* </div> */}
       {openModal && (
         <Modals
           title="Budget entry"

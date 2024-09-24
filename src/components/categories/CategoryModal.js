@@ -6,7 +6,6 @@ const CategoryModal = ({ title, setOpenCatModal, db, setCatDescription }) => {
   const catNameRef = useRef(null);
   const [newCatDescription, setNewCatDescription] = useState("");
   const [newCatCode, setNewCatCode] = useState("");
-
   useEffect(() => {
     if (catNameRef.current) {
       catNameRef.current.focus();
@@ -37,8 +36,8 @@ const CategoryModal = ({ title, setOpenCatModal, db, setCatDescription }) => {
         );
       } else {
         await db.category_descriptions.add({
-          description: newCatDescription,
-          category_description: newCatDescription, // Can be removed if redundant
+          // description: newCatDescription,
+          category_description: newCatDescription,
           category_code: newCatCode,
         });
         setCatDescription(newCatDescription);
@@ -69,12 +68,12 @@ const CategoryModal = ({ title, setOpenCatModal, db, setCatDescription }) => {
     >
       <div>
         <form onSubmit={handleSubmit}>
-          <label>Category name: </label>
+          {/* <label>Category name: </label>
           <input
             ref={catNameRef}
             type="text"
             onChange={(e) => setNewCatDescription(e.target.value)}
-          />
+          /> */}
           <label>Category description: </label>
           <input type="text" onChange={handleCategoryDescription} />
           <label>Category code (optional - to match bank code): </label>

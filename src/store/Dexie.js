@@ -6,10 +6,11 @@ db.version(4).stores({
     "++id,username,hashedPassword,email,address, telephone,last_budget,last_account",
   budgetdetails: "++id,user_id,name,type,lock,year,startmonth,openingbalance",
   budgettransactions:
-    "++id,user_id,name,date,amount,category,description,repeat_options,growth_options,extras",
+    "++id,user_id,name,date,transactiontype,amount,category,description,repeat_options,growth_options,extras",
+  //i need to decide - is transactiontype income and expenses or dr and cr?
   transactiondetails: "++id,user_id,account_id,openingbalance",
   transactions:
-    "++id,user_id,account_id,date,day,type,description,category_code,category_description,amount,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
+    "++id,user_id,account_id,date,day,type,description,category_code,category_description,transactiontype,amount,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
   headers: "++id,user_id,account_id,headers",
   category_descriptions:
     "++id,user_id,description,category_code,category_description",
@@ -58,6 +59,7 @@ async function addBudget(
   category,
   description,
   date,
+  transactiontype,
   amount,
   repeat_options,
   growth_options,
@@ -70,6 +72,7 @@ async function addBudget(
     category: category || "",
     description: description || "",
     date: date || new Date(), // Set the default date to the current date
+    transactiontype: transactiontype || "",
     amount: amount || 0, // Assuming amount should be a number, default to 0
     repeat_options: repeat_options || {}, // Default to an empty object if not provided
     growth_options: growth_options || {}, // Default to an empty object if not provided
@@ -135,6 +138,7 @@ async function updateBudget(id, updatedData) {
     console.error("Error updating budget:", error);
   }
 }
+
 async function updateTransaction(id, updatedData) {
   try {
     await db.transactions.update(id, updatedData);

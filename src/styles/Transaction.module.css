@@ -2,8 +2,7 @@
   width: 90%;
   height: 80vh;
   margin-left: 2.5%;
-  border: 1px solid black;
-  /* borders to be removed later tedtest */
+  padding: 0 1rem 1rem 1rem;
   background-color: #f7f0e4;
   overflow: auto;
   margin-top: 1rem;
@@ -11,10 +10,30 @@
 
 .transaction_details_container {
   width: 90%;
-  /* height: 6rem; */
   margin-left: 2.5%;
   display: flex;
   flex-direction: column;
-  /* border: 1px solid black; */
-  /* remove borders later */
+}
+
+.transaction_main_buttons {
+  height: fit-content;
+  width: fit-content;
+  border: none;
+  background: transparent;
+  display: flex;
+  align-items: center;
+  gap: 0.1rem;
+  cursor: pointer;
+  font-size: 0.8rem;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+
+.transaction_button_grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
+  align-items: center;
+  gap: 5px;
+  right: 0%;
+  bottom: 4%;
 }

@@ -10,6 +10,8 @@ import {
   addTransaction,
 } from "../../store/Dexie";
 import EditTable from "../../utils/EditTable";
+import { BiImport } from "react-icons/bi";
+import { BiExport } from "react-icons/bi";
 import { FaRegTrashAlt, FaRegSave } from "react-icons/fa";
 import Modals from "../../utils/Modals";
 import DropdownMenu from "../../utils/DropDownMenu";
@@ -31,6 +33,8 @@ import { useDataContext } from "../../providers/DataProvider";
 import { set } from "date-fns";
 import CategoryModal from "../categories/CategoryModal";
 import { Link } from "react-router-dom";
+import CreateNewAccount from "../../utils/CreateNewAccount";
+// import SearchableDropdown from "../../components/categories/SearchableDropdown";
 
 const TransactionsTest = () => {
   const [allTrans, setAllTrans] = useState([]);
@@ -60,31 +64,38 @@ const TransactionsTest = () => {
   const [newAccNumber, setNewAccNumber] = useState("");
   const [openingBalance, setOpeningBalance] = useState(0);
   const [addEntry, setAddEntry] = useState(false);
-  const [transactionType, setTransactionType] = useState("Expenses");
+  // const [transactionType, setTransactionType] = useState("expenses");
   const [openCatModal, setOpenCatModal] = useState(false);
   const [allCategories, setAllCategories] = useState([]);
   const [addTransEntry, setAddTransEntry] = useState({
-    transactiontype: "expenses",
     user_id: user.id,
     account_id: "",
     date: "",
     description: "",
     category_description: "",
+    transactiontype: "expenses",
     amount: 0,
   });
+  const transaction_details_container = useRef(null);
+  const [detailsSpaceHgt, setDetailsSpaceHgt] = useState(0);
+
+  useEffect(() => {
+    if (transaction_details_container?.current) {
+      setDetailsSpaceHgt(transaction_details_container?.current?.offsetHeight);
+    }
+  }, [transaction_details_container?.current?.offsetHeight]);
 
   const handleMenuClick = () => {
     setOpenMainMenu((prevOpen) => !prevOpen);
   };
 
-  const handleImport = () => {
-    console.log("tedtestK handleimport");
-    setImportOption(true);
-    // setOpenTransactionsMenu(false);
-    setEditing(false);
-    setExportOption(false);
-    // setCatEdit(false);
-  };
+  // const handleImport = () => {
+  //   setImportOption(true);
+  //   // setOpenTransactionsMenu(false);
+  //   setEditing(false);
+  //   setExportOption(false);
+  //   // setCatEdit(false);
+  // };
 
   const handleEdit = () => {
     setEditing(true);
@@ -152,7 +163,6 @@ const TransactionsTest = () => {
   }, []);
 
   useEffect(() => {
-    console.log("tedtestD currentAccNumber=", currentAccNumber);
     const fetchData = async () => {
       if (currentAccNumber) {
         try {
@@ -221,6 +231,7 @@ const TransactionsTest = () => {
 
     if (originalValue[index] && originalValue[index][name] !== item[name]) {
       console.log(`Field ${name} for item ${index} was changed`);
+      if (name === "amount") item[name] = parseFloat(item[name]).toFixed(2);
       let result = await updateTransaction(item.id, { [name]: item[name] });
 
       if (result) {
@@ -238,14 +249,12 @@ const TransactionsTest = () => {
   };
 
   //   const handleBlur = async (e, index, updatedTransactions) => {
-  //     console.log("tedtestH handleblur");
   //     const { name } = e.target;
   //     const item = updatedTransactions[index];
 
   //     if (originalValue[index] && originalValue[index][name] !== item[name]) {
   //       console.log(`Field ${name} for item ${index} was changed`);
   //       let result = await updateTransaction(item.id, { [name]: item[name] });
-  //       console.log("tedtestH handleblur result=", result);
   // if (result){
 
   //       let sortedTrans = [...allTrans].sort(
@@ -373,6 +382,12 @@ const TransactionsTest = () => {
 
   const handleSubmitEntry = async (e) => {
     e.preventDefault();
+    console.log("tedtestt addTransactionEntry=", addTransEntry);
+    // if (
+    //   addTransEntry.amount > 0 &&
+    //   addTransEntry.transactiontype === "expenses"
+    // )
+    //   addTransEntry.amount = -1 * addTransEntry.amount;
     try {
       let result = await addTransaction(addTransEntry);
       if (result) {
@@ -420,6 +435,12 @@ const TransactionsTest = () => {
   };
 
   const handleInputChange = (field, value) => {
+    console.log(
+      "tedtestt handleinputchange: field=",
+      field,
+      "   value=",
+      value
+    );
     //used for adding a new transaction, not for changing the value- changing values happens in edittable.js
     setAddTransEntry((prevData) => ({
       ...prevData,
@@ -493,30 +514,30 @@ const TransactionsTest = () => {
     );
   };
 
-  useEffect(() => {
-    let amount = 0;
-    if (transactionType === "expenses") {
-      if (addTransEntry.amount > 0)
-        amount = parseFloat((parseFloat(addTransEntry.amount) * -1).toFixed(2));
-      else amount = parseFloat(parseFloat(addTransEntry.amount).toFixed(2));
-    } else if (transactionType === "income") {
-      if (addTransEntry.amount > 0)
-        amount = parseFloat(parseFloat(addTransEntry.amount).toFixed(2));
-      else
-        amount = parseFloat((parseFloat(addTransEntry.amount) * -1).toFixed(2));
-    } else amount = addTransEntry.amount;
-    setAddTransEntry((prevData) => ({
-      ...prevData,
-      account_id: currentAccNumber,
-      amount: amount,
-      // date: date || new Date(),
-      user_id: prevData.user_id || user.id,
-    }));
-  }, [transactionType, addTransEntry.amount]);
+  // useEffect(() => {
+  //   let amount = 0;
+  // if (addTransEntry.transactionType === "expenses") {
+  //   if (addTransEntry.amount > 0)
+  //     amount = parseFloat((parseFloat(addTransEntry.amount) * -1).toFixed(2));
+  //   else amount = parseFloat(parseFloat(addTransEntry.amount).toFixed(2));
+  // } else if (addTransEntry.transactionType === "income") {
+  //   if (addTransEntry.amount > 0)
+  //     amount = parseFloat(parseFloat(addTransEntry.amount).toFixed(2));
+  //   else
+  //     amount = parseFloat((parseFloat(addTransEntry.amount) * -1).toFixed(2));
+  // } else amount = addTransEntry.amount;
+  //   setAddTransEntry((prevData) => ({
+  //     ...prevData,
+  //     account_id: currentAccNumber,
+  //     amount: amount,
+  //     // date: date || new Date(),
+  //     user_id: prevData.user_id || user.id,
+  //   }));
+  // }, [addTransEntry.transactiontype, addTransEntry.amount]);
 
-  const handleIncExp = (event) => {
-    setTransactionType(event.target.value);
-  };
+  // const handleIncExp = (event) => {
+  //   setTransactionType(event.target.value);
+  // };
 
   return (
     <div>
@@ -559,7 +580,10 @@ const TransactionsTest = () => {
         {importOption && <span> - Import</span>}
         {editing && <span> - Edit</span>}
         {exportOption && <span> - Export</span>}
-        <div className={styles.transaction_details_container}>
+        <div
+          className={styles.transaction_details_container}
+          ref={transaction_details_container}
+        >
           <label>
             account no.
             <select
@@ -594,9 +618,49 @@ const TransactionsTest = () => {
             <div>
               <div
                 className={styles.displaycontainer}
-                // className="display-container
+                style={{
+                  height:
+                    detailsSpaceHgt > 0
+                      ? `calc(100vh - ${detailsSpaceHgt} - 2rem)`
+                      : "calc(100vh - 8rem)",
+                }}
               >
-                {/* <h1>Edit Data</h1> */}
+                <div
+                  className={styles.transaction_button_grid}
+                  style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
+                >
+                  <button
+                    className={styles.transaction_main_buttons}
+                    onClick={() => setAddEntry(true)}
+                  >
+                    <MdAddCircleOutline size={24} />
+                    Add
+                  </button>
+                  <button
+                    className={styles.transaction_main_buttons}
+                    disabled={checkedTransactions?.length <= 0}
+                    onClick={() => setDeleteConfirm(true)}
+                  >
+                    <FaRegTrashAlt size={iconSize * 0.9} />
+                    Delete
+                  </button>
+                  <Link
+                    to="/import"
+                    className={styles.transaction_main_buttons}
+                  >
+                    <BiImport size={24} />
+                    {/* <FaFileImport size={20} /> */}
+                    Import
+                  </Link>
+                  <button
+                    className={styles.transaction_main_buttons}
+                    onClick={() => handleExport()}
+                  >
+                    <BiExport size={24} />
+                    {/* <FaFileExport size={20} /> */}
+                    Export
+                  </button>
+                </div>
                 {allTrans && allTrans?.length > 0 ? (
                   <EditTable
                     transactions={allTrans}
@@ -609,12 +673,12 @@ const TransactionsTest = () => {
                   <p style={{ marginLeft: "1rem" }}>No data found</p>
                 )}
               </div>
-              <div
+              {/* <div
                 className="button_grid"
                 style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
               >
                 <button
-                  className="main_buttons"
+                  className="transaction-main-buttons"
                   disabled={checkedTransactions?.length <= 0}
                   onClick={() => setDeleteConfirm(true)}
                 >
@@ -622,30 +686,32 @@ const TransactionsTest = () => {
                   Delete
                 </button>
                 <button
-                  className="main_buttons"
-                  // disabled={checkedTransactions?.length <= 0}
+                  className="transaction-main-buttons"
                   onClick={() => setAddEntry(true)}
                 >
-                  {/* tedtest filled icons or not filled? */}
                   <MdAddCircle size={24} />
-                  {/* <MdAddCircleOutline size={24} /> */}
-                  {/* <FaRegTrashAlt size={iconSize * 0.9}/> */}
                   Add
                 </button>
-                <Link to="/import" className="main_buttons">
+                <Link to="/import" className="transaction-main-buttons">
                   <FaFileImport size={20} />
                   Import
                 </Link>
 
-                <button className="main_buttons" onClick={() => handleImport()}>
+                <button
+                  className="transaction-main-buttons"
+                  onClick={() => handleImport()}
+                >
                   <FaFileImport size={20} />
                   Import
                 </button>
-                <button className="main_buttons" onClick={() => handleExport()}>
+                <button
+                  className="transaction-main-buttons"
+                  onClick={() => handleExport()}
+                >
                   <FaFileExport size={20} />
                   Export
                 </button>
-              </div>
+              </div> */}
             </div>
           )}
           {/* {importOption && <ImportDataNew />} */}
@@ -734,7 +800,7 @@ const TransactionsTest = () => {
           footer={
             <div style={{ display: "flex", flexDirection: "row" }}>
               <button
-                className="main_buttons"
+                className="transaction-main-buttons"
                 type="button"
                 onClick={(e) => {
                   handleSubmitEntry(e);
@@ -760,24 +826,10 @@ const TransactionsTest = () => {
                   onChange={(e) => handleInputChange("date", e.target.value)}
                 />
               </div>
-              {/* <div className="form-field" style={{ fontSize: "0.8rem" }}>
-                <label>
-                  Type (optional (not used yet)):
-                  <input
-                    // ref={descriptionInputRef}
-                    style={{ width: "15rem" }}
-                    type="text"
-                    placeholder="type"
-                    value={addTransEntry.type}
-                    onChange={(e) => handleInputChange("type", e.target.value)}
-                  ></input>
-                </label>
-              </div> */}
               <div className="form-field" style={{ fontSize: "0.8rem" }}>
                 <label>
                   Description:
                   <input
-                    // ref={descriptionInputRef}
                     style={{ width: "15rem" }}
                     type="text"
                     placeholder="description"
@@ -810,10 +862,12 @@ const TransactionsTest = () => {
                   <input
                     type="radio"
                     id="income"
-                    name="transactionType"
-                    value="Income"
-                    checked={transactionType === "Income"}
-                    onChange={handleIncExp}
+                    name="transactiontype"
+                    value="income"
+                    checked={addTransEntry.transactiontype === "income"}
+                    onChange={(e) =>
+                      handleInputChange("transactiontype", e.target.value)
+                    }
                   />
                   Income
                 </label>
@@ -823,15 +877,16 @@ const TransactionsTest = () => {
                   <input
                     type="radio"
                     id="expenses"
-                    name="transactionType"
-                    value="Expenses"
-                    checked={transactionType === "Expenses"}
-                    onChange={handleIncExp}
+                    name="transactiontype"
+                    value="expenses"
+                    checked={addTransEntry.transactiontype === "expenses"}
+                    onChange={(e) =>
+                      handleInputChange("transactiontype", e.target.value)
+                    }
                   />
                   Expenses
                 </label>
               </div>
-              {/* "++id,user_id,account_id,date,day,type,description,category_code,category_description,amount,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras", */}
             </div>
           </form>
         </Modals>

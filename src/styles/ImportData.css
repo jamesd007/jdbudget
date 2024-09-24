@@ -132,3 +132,10 @@ input-box {
 .indent-left-margin {
   margin-left: 1rem;
 }
+
+.transaction_details_container {
+  width: 90%;
+  margin-left: 2.5%;
+  display: flex;
+  flex-direction: column;
+}
