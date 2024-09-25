@@ -248,9 +248,11 @@ const useHandleRecurrence = (setAllBudgets) => {
       const entry = {
         user_id: data.user_id || "default_user_id",
         budgetName: data.name || "",
-        date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-        description: data.description || "",
+        type: data.type || "",
         category: data.category || "",
+        description: data.description || "",
+        date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
+        transactiontype: data.transactiontype || "expenses",
         amount: Math.abs(data.amount) || 0,
         repeat_options: data.repeat_options || {},
         growth_options: data.growth_options || {},
@@ -461,7 +463,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             currentYear
           );
           if (chkInCurrMonthDate < endSelectedDay)
-            //tedtest what happens if the selected day is in the last month of the financial year?
+            //TODO tedtest what happens if the selected day is in the last month of the financial year?
             currentMonth = currentMonth + 1;
           while (selectedDay <= endSelectedDay) {
             // Calculate the offset from the start month
@@ -506,7 +508,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             currentYear
           );
           if (chkInCurrMonthDate < endSelectedDay)
-            //tedtest what happens if the selected day is in the last month of the financial year?
+            //TODO tedtest what happens if the selected day is in the last month of the financial year?
             currentMonth = currentMonth + 1;
           while (count < occurrences) {
             if (
@@ -547,7 +549,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             currentYear
           );
           if (chkInCurrMonthDate < endSelectedDay)
-            //tedtest what happens if the selected day is in the last month of the financial year?
+            //TODO tedtest what happens if the selected day is in the last month of the financial year?
             currentMonth = currentMonth + 1;
           while (selectedDay <= endSelectedDay) {
             // Calculate the offset from the start month
@@ -590,7 +592,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             currentYear
           );
           if (chkInCurrMonthDate < endSelectedDay)
-            //tedtest what happens if the selected day is in the last month of the financial year?
+            //TODO tedtest what happens if the selected day is in the last month of the financial year?
             currentMonth = currentMonth + 1;
           let endMonth;
           let endYear = endSelectedDay.getFullYear();
@@ -686,7 +688,7 @@ const useHandleRecurrence = (setAllBudgets) => {
       // Calculate yearly recurrence
       newDate = repeatData.yearlyRecurDate;
       if (repeatData.yearlyOnDate === "onDate") {
-        //tedtest need to check these!!- they look the same
+        //TODO tedtest need to check these!!- they look the same
         if (repeatData.endSpec === "endBy") {
           dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);

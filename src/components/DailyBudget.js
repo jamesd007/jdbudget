@@ -440,14 +440,21 @@ const DailyBudget = () => {
 
   // Calculate balances
   const calcBalances = (item) => {
-    if (!item || item.amount == null || isNaN(parseFloat(item.amount))) {
+    if (
+      !item ||
+      item.amount === 0 ||
+      item.amount === null ||
+      isNaN(parseFloat(item.amount))
+    ) {
       return continuousBalanceRef.current.toFixed(2);
     }
     if (item !== null && continuousBalanceRef.current !== null) {
       let amountNum = parseFloat(item.amount);
-      continuousBalanceRef.current += amountNum;
+      if (item.transactiontype === "expenses")
+        continuousBalanceRef.current -= amountNum;
+      else continuousBalanceRef.current += amountNum;
     }
-    return continuousBalanceRef.current.toFixed(2);
+    return continuousBalanceRef?.current?.toFixed(2);
   };
 
   useEffect(() => {
@@ -457,7 +464,8 @@ const DailyBudget = () => {
         const dayRecords = getDaysRecords(formatDate(date, "DD MMM YYYY"));
         if (!dayRecords || dayRecords?.length === 0) {
           // If no records, return an array with the current balance
-          return [openingBalance.toFixed(2)];
+          return [continuousBalanceRef.current.toFixed(2)];
+          // [openingBalance.toFixed(2)];
           // return [continuousBalanceRef?.current.toFixed(2)];
         }
         return dayRecords?.map((item) => calcBalances(item));
@@ -466,7 +474,7 @@ const DailyBudget = () => {
       setCalculatedBalances(balances);
       initialCalculationDoneRef.current = true; // Prevent further calculations
     }
-  }, [calendar, startBalance]); // Trigger calculation only when calendar or start balance changes
+  }, [calendar, startBalance, allBudgets]); // Trigger calculation only when calendar or start balance changes
 
   const getOpeningBalance = async () => {
     // Fetch the opening balance from budgetdetails table for the relevant account
@@ -571,7 +579,6 @@ const DailyBudget = () => {
           growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
           extras: budgetData.extras || "", // Default to an empty string if not provided
         };
-        console.log("tedtest11 dataToSave=", dataToSave);
         handleRecurrence(dataToSave);
         handleCloseModal();
         resetVars();
@@ -590,8 +597,6 @@ const DailyBudget = () => {
           growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
           extras: budgetData.extras || "", // Default to an empty string if not provided
         };
-        console.log("tedtest11 2. dataToSave=", dataToSave);
-
         // This should write data to the database
         if (editMode) {
           await updateBudget(editId, dataToSave);
@@ -639,6 +644,7 @@ const DailyBudget = () => {
 
   const handleOpenModal = (date, index) => {
     setCurrentDate(date);
+    continuousBalanceRef.current = startBalance;
     const dateObj = new Date(date);
     // Extract the current month from the dateObj-
     // current month is the month on which the user is currently positioned in the budget
@@ -978,6 +984,7 @@ const DailyBudget = () => {
   };
 
   const setVarsForEdit = (date, item, recurring) => {
+    continuousBalanceRef.current = startBalance;
     setCurrentDate(date);
     setIsModalOpen(true);
     setEditMode(true);
@@ -1287,16 +1294,29 @@ const DailyBudget = () => {
                         minHeight: "20px",
                       }}
                     >
-                      {dayRecords?.map((item, idx) => (
-                        <div
-                          className="dayRecords"
-                          style={{ cursor: "pointer" }}
-                          key={idx}
-                          onClick={() => handleEditRec(item.date, item, idx)}
-                        >
-                          {item.description}
-                        </div>
-                      ))}
+                      {dayRecords?.map((item, idx) => {
+                        return (
+                          <div
+                            className="dayRecords"
+                            style={{ cursor: "pointer" }}
+                            key={idx}
+                            onClick={() => handleEditRec(item.date, item, idx)}
+                          >
+                            <span>{item.description}</span>
+                            {/* {item.repeat_options &&
+                              Object.keys(item.repeat_options).length > 0 && (
+                                <span
+                                  style={{
+                                    color: "red",
+                                    fontSize: "0.75em",
+                                  }}
+                                >
+                                  {"   "}repeats
+                                </span>
+                              )} */}
+                          </div>
+                        );
+                      })}
                       {dayRecords?.length > 0 ? (
                         <button
                           className="budget-add-button"
@@ -1332,7 +1352,6 @@ const DailyBudget = () => {
                   </td>
                   <td className={styles.dr}>
                     {dayRecords?.map((item, idx) => {
-                      console.log("tedtest9 item=", item);
                       return (
                         <div
                           className="dayRecords"

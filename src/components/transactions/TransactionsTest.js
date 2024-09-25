@@ -382,12 +382,6 @@ const TransactionsTest = () => {
 
   const handleSubmitEntry = async (e) => {
     e.preventDefault();
-    console.log("tedtestt addTransactionEntry=", addTransEntry);
-    // if (
-    //   addTransEntry.amount > 0 &&
-    //   addTransEntry.transactiontype === "expenses"
-    // )
-    //   addTransEntry.amount = -1 * addTransEntry.amount;
     try {
       let result = await addTransaction(addTransEntry);
       if (result) {
@@ -401,14 +395,6 @@ const TransactionsTest = () => {
     } catch (error) {
       console.error("Error adding new transaction:", error);
     }
-    // setAllTrans((prevData) => [...prevData, addTransEntry]);
-
-    // const sortedTransactions = [...allTrans].sort(
-    //   (a, b) => new Date(a.date) - new Date(b.date)
-    // );
-    // setAllTrans(sortedTransactions);
-    // Now you can map through sortedTransactions
-
     setAddEntry(false);
     reinitialiseVars();
   };
@@ -425,8 +411,6 @@ const TransactionsTest = () => {
     setCurrentAccNumber(val);
     try {
       const transactions = await getAllTransactions(val);
-      // if (!transactions || transactions?.length === 0)
-      //   setOpenTransactionsMenu(true);
       setAllTrans(transactions);
       await db.users.update(user.id, { last_account: newAccNumber });
     } catch (error) {
@@ -435,12 +419,6 @@ const TransactionsTest = () => {
   };
 
   const handleInputChange = (field, value) => {
-    console.log(
-      "tedtestt handleinputchange: field=",
-      field,
-      "   value=",
-      value
-    );
     //used for adding a new transaction, not for changing the value- changing values happens in edittable.js
     setAddTransEntry((prevData) => ({
       ...prevData,

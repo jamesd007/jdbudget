@@ -29,7 +29,7 @@
   width: 100%;
   height: 100%;
   background: cadetblue;
-  /* tedtest try the icon/pic background later */
+  /* TODO tedtest try the icon/pic background later */
   /* background: url("../icons/blue-sky.jpg") repeat; */
   -webkit-background-clip: text;
   background-clip: text;

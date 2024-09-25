@@ -367,7 +367,7 @@ const ImportDataNew = (props) => {
 
   //getaccount_id
   useEffect(() => {
-    //tedtest this looks at import file for possible account no.
+    // this looks at import file for possible account no.
     //it must check this account no against the current account no from user.last_account
     //if it matches do nothing
     // if it does not match ask user if current account must be changed
@@ -393,7 +393,7 @@ const ImportDataNew = (props) => {
     };
 
     const checkAccountNumber = async () => {
-      //now we have currentAccNumber, do we need this? tedtest
+      //now we have currentAccNumber, do we need this? TODO tedtest
       let found = await getAccountNumber();
       if (!found) {
         setGetAccNumber(true);
@@ -893,7 +893,7 @@ const ImportDataNew = (props) => {
     }
     if (isValidHdrs && proceed) {
       const processedData = processData();
-      //tedtest for each record in processeddata check if it hs category_description
+      //for each record in processeddata check if it hs category_description
       //if not, look in table category_description for a record with description===processedData's description
       //if found, add field and field details to processedData
       processedData.map((item) => {
@@ -1057,7 +1057,7 @@ const ImportDataNew = (props) => {
         console.error("ERROR saving description:", error);
         alert("description save failed");
       }
-      //tedtest check if description is in table category_descriptions
+      // check if description is in table category_descriptions
       //if not then add "++id,description,category_code,category_description"
       //if it is there ask user if the category_description for this description should change
       //if yes change it, no don't do anything

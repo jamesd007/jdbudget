@@ -133,7 +133,6 @@ const EditTable = ({
   }, [currentAccNumber]);
 
   useEffect(() => {
-    console.log("tedtest5 useeffect setting editable transactions");
     setEditableTransactions(transactions);
   }, [transactions]);
 
@@ -161,12 +160,10 @@ const EditTable = ({
 
   const handleDataChange = (e, index, id) => {
     const { name, value } = e.target;
-    console.log("tedtest8 name=", name, "   value=", value);
     let newVal;
     if (name === "amount" && typeof value === "string")
       newVal = parseFloat(value);
     else newVal = value;
-    console.log("tedtest8   newval=", newVal);
     const updatedTransactions = [...editableTransactions];
     updatedTransactions[index] = {
       ...updatedTransactions[index],
@@ -321,7 +318,7 @@ const EditTable = ({
               </tr>
             </thead>
             <tbody className="edittablebody">
-              {/* tedtest there is no editablebody */}
+              {/*TODO  tedtest there is no editablebody */}
               <tr>
                 <td colSpan="8">
                   <input
@@ -370,8 +367,8 @@ const EditTable = ({
                           type="date"
                           name="date"
                           value={
-                            //tedtest if a line has incorrect format it may cause an item.date with invalid data
-                            //tedtest need to check the format - that it is a date- as well as existence of item.date
+                            //TODO tedtest if a line has incorrect format it may cause an item.date with invalid data
+                            //TODO tedtest need to check the format - that it is a date- as well as existence of item.date
                             item.date
                               ? new Date(item.date).toISOString().split("T")[0] // Format as YYYY-MM-DD
                               : ""
