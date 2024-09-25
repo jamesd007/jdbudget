@@ -96,16 +96,16 @@ const useHandleRecurrence = (setAllBudgets) => {
     let lastMatchingDate = null;
 
     for (let count = 1; count <= days; count++) {
-      let newDate = new Date(year, monthNo, count);
-      if (newDate.getMonth() !== monthNo) {
+      let newMnthDate = new Date(year, monthNo, count);
+      if (newMnthDate.getMonth() !== monthNo) {
         break; // Exit the loop if the month has ended
       }
       let dayNumber = dayToNumber[monthFreqOptionDay];
-      if (newDate.getDay() === dayNumber) {
+      if (newMnthDate.getDay() === dayNumber) {
         mfoCounter++;
-        lastMatchingDate = newDate;
+        lastMatchingDate = newMnthDate;
         if (mfoCounter === mfoIndex) {
-          return newDate;
+          return newMnthDate;
         }
       }
     }
@@ -214,16 +214,16 @@ const useHandleRecurrence = (setAllBudgets) => {
       return date;
     }
     for (let count = 1; count <= days; count++) {
-      let newDate = new Date(year, monthNo, count);
-      if (newDate.getMonth() !== monthNo) {
+      let newYrDate = new Date(year, monthNo, count);
+      if (newYrDate.getMonth() !== monthNo) {
         break; // Exit the loop if the month has ended
       }
       let yearlyDayNumber = yearlyDayToNumber[yearlyFreqOptionDay];
-      if (newDate.getDay() === yearlyDayNumber) {
+      if (newYrDate.getDay() === yearlyDayNumber) {
         yfoCounter++;
-        lastMatchingDate = newDate;
+        lastMatchingDate = newYrDate;
         if (yfoCounter === yfoIndex) {
-          return newDate;
+          return newYrDate;
         }
       }
     }
@@ -241,6 +241,25 @@ const useHandleRecurrence = (setAllBudgets) => {
   }, []);
 
   const calculateRecurrence = async (data) => {
+    let newDate = new Date();
+    let dataToSave = [];
+
+    const letEntry = () => {
+      const entry = {
+        user_id: data.user_id || "default_user_id",
+        budgetName: data.name || "",
+        date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
+        description: data.description || "",
+        category: data.category || "",
+        amount: Math.abs(data.amount) || 0,
+        repeat_options: data.repeat_options || {},
+        growth_options: data.growth_options || {},
+        extras: data.extras || "",
+      };
+      return entry;
+      // dataToSave.push(entry);
+    };
+
     const formatDate = (date, format) => {
       return dayjs(date).format(format);
     };
@@ -249,7 +268,7 @@ const useHandleRecurrence = (setAllBudgets) => {
     // Example: Add logic for daily, weekly, monthly, yearly recurrence
     let repeatData = data.repeat_options;
     const initialDate = new Date(repeatData.selectedDay); // Convert string to Date object
-    let dataToSave = [];
+    // let dataToSave = [];
     let selectedDay = new Date(repeatData.selectedDay);
     let endSelectedDay = new Date(repeatData.endSelectedDay);
 
@@ -268,20 +287,9 @@ const useHandleRecurrence = (setAllBudgets) => {
             count < occurrences;
             count = count + daysToRepeat
           ) {
-            let newDate = new Date(initialDate);
+            newDate = new Date(initialDate);
             newDate.setDate(initialDate.getDate() + count); // Add count days to the initial date
-            let entry = {
-              user_id: data.user_id || "default_user_id",
-              budgetName: data.name || "",
-              date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-              description: data.description || "",
-              category: data.category || "",
-              amount: Math.abs(data.amount) || 0,
-              repeat_options: data.repeat_options || {},
-              growth_options: data.growth_options || {},
-              extras: data.extras || "",
-            };
-            dataToSave.push(entry);
+            dataToSave.push(letEntry());
           }
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         } else if (repeatData.endSpec === "endAfter") {
@@ -289,22 +297,11 @@ const useHandleRecurrence = (setAllBudgets) => {
             const occurrences = repeatData.endAfterOccurrences || 1;
             let daysToRepeat = parseFloat(repeatData.repeatFreqDays);
             for (let count = 0; count < occurrences; count++) {
-              let newDate = new Date(initialDate);
+              newDate = new Date(initialDate);
               newDate.setDate(initialDate.getDate() + count * daysToRepeat); // Add count days to the initial date
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              dataToSave.push(entry);
+              dataToSave.push(letEntry());
             }
-            await saveToDatabase(dataToSave);
+            if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
           }
         } else if ((repeatData.endSpec = "noEndDate")) {
           endSelectedDay = getFinancialYearEndDate(initialDate);
@@ -319,20 +316,9 @@ const useHandleRecurrence = (setAllBudgets) => {
             count < occurrences;
             count = count + daysToRepeat
           ) {
-            let newDate = new Date(initialDate);
+            newDate = new Date(initialDate);
             newDate.setDate(newDate.getDate() + count); // Add count days to the initial date
-            let entry = {
-              user_id: data.user_id || "default_user_id",
-              budgetName: data.name || "",
-              date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'DD MMM YYYY'
-              description: data.description || "",
-              category: data.category || "",
-              amount: Math.abs(data.amount) || 0,
-              repeat_options: data.repeat_options || {},
-              growth_options: data.growth_options || {},
-              extras: data.extras || "",
-            };
-            dataToSave.push(entry);
+            dataToSave.push(letEntry());
           }
           await saveToDatabase(dataToSave);
         }
@@ -344,22 +330,11 @@ const useHandleRecurrence = (setAllBudgets) => {
           const millisecondsPerDay = 1000 * 60 * 60 * 24;
           const occurrences = differenceInMilliseconds / millisecondsPerDay + 1;
           for (let count = 0; count < occurrences; count++) {
-            let newDate = new Date(initialDate);
+            newDate = new Date(initialDate);
             newDate.setDate(initialDate.getDate() + count); // Add count days to the initial date
             //check if the day is a weekday
             if (newDate.getDay() !== 6 && newDate.getDay() !== 0) {
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              if (entry) dataToSave.push(entry);
+              dataToSave.push(letEntry());
             }
           }
           if (dataToSave) await saveToDatabase(dataToSave);
@@ -367,24 +342,13 @@ const useHandleRecurrence = (setAllBudgets) => {
           if (repeatData.endAfterOccurrences > 0) {
             const occurrences = repeatData.endAfterOccurrences || 1;
             // let daysToRepeat = parseFloat(repeatData.repeatFreqDays);
-            let newDate = new Date(initialDate);
+            newDate = new Date(initialDate);
             newDate.setDate(initialDate.getDate());
             for (let count = 0; count < occurrences; count++) {
               while (newDate.getDay() === 6 || newDate.getDay() === 0) {
                 newDate.setDate(newDate.getDate() + 1);
               }
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              dataToSave.push(entry);
+              dataToSave.push(letEntry());
               newDate.setDate(newDate.getDate() + 1);
             }
             await saveToDatabase(dataToSave);
@@ -397,23 +361,12 @@ const useHandleRecurrence = (setAllBudgets) => {
           const millisecondsPerDay = 1000 * 60 * 60 * 24;
           const occurrences = differenceInMilliseconds / millisecondsPerDay + 1;
           for (let count = 0; count < occurrences; count++) {
-            let newDate = new Date(initialDate);
+            newDate = new Date(initialDate);
             newDate.setDate(initialDate.getDate() + count); // Add count days to the initial date
             while (newDate.getDay() === 6 || newDate.getDay() === 0) {
               newDate.setDate(newDate.getDate() + 1);
             }
-            let entry = {
-              user_id: data.user_id || "default_user_id",
-              budgetName: data.name || "",
-              date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'DD MMM YYYY'
-              description: data.description || "",
-              category: data.category || "",
-              amount: Math.abs(data.amount) || 0,
-              repeat_options: data.repeat_options || {},
-              growth_options: data.growth_options || {},
-              extras: data.extras || "",
-            };
-            dataToSave.push(entry);
+            dataToSave.push(letEntry());
           }
           await saveToDatabase(dataToSave);
         }
@@ -431,7 +384,7 @@ const useHandleRecurrence = (setAllBudgets) => {
         const millisecondsPerDay = 1000 * 60 * 60 * 24;
 
         const occurrences = differenceInMilliseconds / millisecondsPerDay + 1;
-        let newDate = new Date(initialDate);
+        newDate = new Date(initialDate);
         let count = 0;
         let weekCount = 0;
         while (count < occurrences) {
@@ -439,18 +392,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             daysArray.includes(newDate.getDay()) &&
             (weekCount % repeatData.repeatWeeklyWeeks === 0 || weekCount === 0)
           ) {
-            let entry = {
-              user_id: data.user_id || "default_user_id",
-              budgetName: data.name || "",
-              date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-              description: data.description || "",
-              category: data.category || "",
-              amount: Math.abs(data.amount) || 0,
-              repeat_options: data.repeat_options || {},
-              growth_options: data.growth_options || {},
-              extras: data.extras || "",
-            };
-            dataToSave.push(entry);
+            dataToSave.push(letEntry());
           }
           count++;
           newDate.setDate(newDate.getDate() + 1);
@@ -461,7 +403,7 @@ const useHandleRecurrence = (setAllBudgets) => {
       } else if (repeatData.endSpec === "endAfter") {
         if (repeatData.endAfterOccurrences > 0) {
           const occurrences = repeatData.endAfterOccurrences || 1;
-          let newDate = new Date(initialDate);
+          newDate = new Date(initialDate);
           let count = 0;
           let weekCount = 0;
           while (count < occurrences) {
@@ -470,18 +412,7 @@ const useHandleRecurrence = (setAllBudgets) => {
               (weekCount % repeatData.repeatWeeklyWeeks === 0 ||
                 weekCount === 0)
             ) {
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              dataToSave.push(entry);
+              dataToSave.push(letEntry());
               count++;
             }
             newDate.setDate(newDate.getDate() + 1);
@@ -498,7 +429,7 @@ const useHandleRecurrence = (setAllBudgets) => {
         const millisecondsPerDay = 1000 * 60 * 60 * 24;
         const occurrences = differenceInMilliseconds / millisecondsPerDay + 1;
 
-        let newDate = new Date(initialDate);
+        newDate = new Date(initialDate);
         let count = 0;
         let weekCount = 0;
         while (count < occurrences) {
@@ -506,18 +437,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             daysArray.includes(newDate.getDay()) &&
             (weekCount % repeatData.repeatWeeklyWeeks === 0 || weekCount === 0)
           ) {
-            let entry = {
-              user_id: data.user_id || "default_user_id",
-              budgetName: data.name || "",
-              date: formatDate(newDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-              description: data.description || "",
-              category: data.category || "",
-              amount: Math.abs(data.amount) || 0,
-              repeat_options: data.repeat_options || {},
-              growth_options: data.growth_options || {},
-              extras: data.extras || "",
-            };
-            dataToSave.push(entry);
+            dataToSave.push(letEntry());
           }
           count++;
           newDate.setDate(newDate.getDate() + 1);
@@ -533,7 +453,7 @@ const useHandleRecurrence = (setAllBudgets) => {
           let monthCount = 0;
           let currentMonth = selectedDay.getMonth();
           let currentYear = selectedDay.getFullYear();
-          // let newDate = new Date(initialDate);
+          // newDate = new Date(initialDate);
           let chkInCurrMonthDate = calcMonthlyDate(
             currentMonth,
             repeatData.monthFreqOption,
@@ -547,7 +467,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             // Calculate the offset from the start month
             if (monthCount % repeatData.numberOfMonths === 0) {
               // Determine the date for the current month
-              let newDate = new Date(
+              newDate = new Date(
                 currentYear,
                 currentMonth,
                 repeatData.dayOfMonth
@@ -557,18 +477,7 @@ const useHandleRecurrence = (setAllBudgets) => {
                 newDate <= endSelectedDay &&
                 newDate.getDate() === Number(repeatData.dayOfMonth)
               ) {
-                let entry = {
-                  user_id: data.user_id || "default_user_id",
-                  budgetName: data.name || "",
-                  date: formatDate(newDate, "DD MMM YYYY"),
-                  description: data.description || "",
-                  category: data.category || "",
-                  amount: Math.abs(data.amount) || 0,
-                  repeat_options: data.repeat_options || {},
-                  growth_options: data.growth_options || {},
-                  extras: data.extras || "",
-                };
-                dataToSave.push(entry);
+                dataToSave.push(letEntry());
               }
             }
             // Move to the next month
@@ -604,7 +513,7 @@ const useHandleRecurrence = (setAllBudgets) => {
               monthCount % repeatData.numberOfMonths === 0 ||
               monthCount === 0
             ) {
-              let newDate = new Date(
+              newDate = new Date(
                 currentYear,
                 currentMonth,
                 repeatData.dayOfMonth
@@ -613,18 +522,7 @@ const useHandleRecurrence = (setAllBudgets) => {
                 newDate <= endSelectedDay &&
                 newDate.getDate() === Number(repeatData.dayOfMonth) // Ensure both are numbers
               ) {
-                let entry = {
-                  user_id: data.user_id || "default_user_id",
-                  budgetName: data.name || "",
-                  date: formatDate(newDate, "DD MMM YYYY"),
-                  description: data.description || "",
-                  category: data.category || "",
-                  amount: Math.abs(data.amount) || 0,
-                  repeat_options: data.repeat_options || {},
-                  growth_options: data.growth_options || {},
-                  extras: data.extras || "",
-                };
-                dataToSave.push(entry);
+                dataToSave.push(letEntry());
                 count++;
               }
             }
@@ -655,7 +553,7 @@ const useHandleRecurrence = (setAllBudgets) => {
             // Calculate the offset from the start month
             if (monthCount % repeatData.numberOfMonths === 0) {
               // Determine the date for the current month
-              let newDate = new Date(
+              newDate = new Date(
                 currentYear,
                 currentMonth,
                 repeatData.dayOfMonth
@@ -665,18 +563,7 @@ const useHandleRecurrence = (setAllBudgets) => {
                 newDate <= endSelectedDay &&
                 newDate.getDate() === Number(repeatData.dayOfMonth)
               ) {
-                let entry = {
-                  user_id: data.user_id || "default_user_id",
-                  budgetName: data.name || "",
-                  date: formatDate(newDate, "DD MMM YYYY"),
-                  description: data.description || "",
-                  category: data.category || "",
-                  amount: Math.abs(data.amount) || 0,
-                  repeat_options: data.repeat_options || {},
-                  growth_options: data.growth_options || {},
-                  extras: data.extras || "",
-                };
-                dataToSave.push(entry);
+                dataToSave.push(letEntry());
               }
             }
             // Move to the next month
@@ -715,24 +602,13 @@ const useHandleRecurrence = (setAllBudgets) => {
               monthNo % repeatData.numberOfMonthsMonthly === 0 ||
               monthNo === 0
             ) {
-              let transDate = calcMonthlyDate(
+              newDate = calcMonthlyDate(
                 currentMonth,
                 repeatData.monthFreqOption,
                 repeatData.monthFreqOptionDay,
                 currentYear
               );
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              dataToSave.push(entry);
+              dataToSave.push(letEntry());
             }
             monthNo++;
             currentMonth++;
@@ -755,24 +631,13 @@ const useHandleRecurrence = (setAllBudgets) => {
               monthCount % repeatData.numberOfMonthsMonthly === 0 ||
               monthCount === 0
             ) {
-              let transDate = calcMonthlyDate(
+              newDate = calcMonthlyDate(
                 currentMonth,
                 repeatData.monthFreqOption,
                 repeatData.monthFreqOptionDay,
                 currentYear
               );
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(transDate, "DD MMM YYYY"),
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              dataToSave.push(entry);
+              dataToSave.push(letEntry());
               count++;
             }
             currentMonth++;
@@ -798,24 +663,13 @@ const useHandleRecurrence = (setAllBudgets) => {
               monthNo % repeatData.numberOfMonthsMonthly === 0 ||
               monthNo === 0
             ) {
-              let transDate = calcMonthlyDate(
+              newDate = calcMonthlyDate(
                 currentMonth,
                 repeatData.monthFreqOption,
                 repeatData.monthFreqOptionDay,
                 currentYear
               );
-              let entry = {
-                user_id: data.user_id || "default_user_id",
-                budgetName: data.name || "",
-                date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-                description: data.description || "",
-                category: data.category || "",
-                amount: Math.abs(data.amount) || 0,
-                repeat_options: data.repeat_options || {},
-                growth_options: data.growth_options || {},
-                extras: data.extras || "",
-              };
-              dataToSave.push(entry);
+              dataToSave.push(letEntry());
             }
             monthNo++;
             currentMonth++;
@@ -830,119 +684,49 @@ const useHandleRecurrence = (setAllBudgets) => {
       }
     } else if (repeatData.frequency === "yearly") {
       // Calculate yearly recurrence
+      newDate = repeatData.yearlyRecurDate;
       if (repeatData.yearlyOnDate === "onDate") {
+        //tedtest need to check these!!- they look the same
         if (repeatData.endSpec === "endBy") {
-          let entry = {
-            user_id: data.user_id || "default_user_id",
-            budgetName: data.name || "",
-            date: formatDate(repeatData.yearlyRecurDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            description: data.description || "",
-            category: data.category || "",
-            amount: Math.abs(data.amount) || 0,
-            repeat_options: data.repeat_options || {},
-            growth_options: data.growth_options || {},
-            extras: data.extras || "",
-          };
-          dataToSave.push(entry);
+          dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         } else if (repeatData.endSpec === "endAfter") {
-          let entry = {
-            user_id: data.user_id || "default_user_id",
-            budgetName: data.name || "",
-            date: formatDate(repeatData.yearlyRecurDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            description: data.description || "",
-            category: data.category || "",
-            amount: Math.abs(data.amount) || 0,
-            repeat_options: data.repeat_options || {},
-            growth_options: data.growth_options || {},
-            extras: data.extras || "",
-          };
-          dataToSave.push(entry);
+          dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         } else if (repeatData.endSpec === "noEndDate") {
-          let entry = {
-            user_id: data.user_id || "default_user_id",
-            budgetName: data.name || "",
-            date: formatDate(repeatData.yearlyRecurDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            description: data.description || "",
-            category: data.category || "",
-            amount: Math.abs(data.amount) || 0,
-            repeat_options: data.repeat_options || {},
-            growth_options: data.growth_options || {},
-            extras: data.extras || "",
-          };
-          dataToSave.push(entry);
+          dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         }
       } else if (repeatData.yearlyOnDate === "onDay") {
         if (repeatData.endSpec === "endBy") {
           let currentYear = selectedDay.getFullYear();
-          let transDate = calcYearlyDate(
+          newDate = calcYearlyDate(
             months.indexOf(repeatData.yearlyOnDayRecurMonth),
             repeatData.yearlyFreqOption,
             repeatData.yearlyFreqOptionDay,
             currentYear
           );
-          let entry = {
-            user_id: data.user_id || "default_user_id",
-            budgetName: data.name || "",
-            type: data.type || "",
-            category: data.category || "",
-            description: data.description || "",
-            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            transactiontype: data.transactiontype || "expenses",
-            amount: Math.abs(data.amount) || 0,
-            repeat_options: data.repeat_options || {},
-            growth_options: data.growth_options || {},
-            extras: data.extras || "",
-          };
-          dataToSave.push(entry);
+          dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         } else if (repeatData.endSpec === "endAfter") {
           let currentYear = selectedDay.getFullYear();
-          let transDate = calcYearlyDate(
+          newDate = calcYearlyDate(
             months.indexOf(repeatData.yearlyOnDayRecurMonth),
             repeatData.yearlyFreqOption,
             repeatData.yearlyFreqOptionDay,
             currentYear
           );
-          let entry = {
-            user_id: data.user_id || "default_user_id",
-            budgetName: data.name || "",
-            type: data.type || "",
-            category: data.category || "",
-            description: data.description || "",
-            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            transactiontype: data.transactiontype || "expenses",
-            amount: Math.abs(data.amount) || 0,
-            repeat_options: data.repeat_options || {},
-            growth_options: data.growth_options || {},
-            extras: data.extras || "",
-          };
-          dataToSave.push(entry);
+          dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         } else if (repeatData.endSpec === "noEndDate") {
           let currentYear = selectedDay.getFullYear();
-          let transDate = calcYearlyDate(
+          newDate = calcYearlyDate(
             months.indexOf(repeatData.yearlyOnDayRecurMonth),
             repeatData.yearlyFreqOption,
             repeatData.yearlyFreqOptionDay,
             currentYear
           );
-          let entry = {
-            user_id: data.user_id || "default_user_id",
-            budgetName: data.name || "",
-            type: data.type || "",
-            category: data.category || "",
-            description: data.description || "",
-            date: formatDate(transDate, "DD MMM YYYY"), // Format date as 'YYYY-MM-DD'
-            transactiontype: data.transactiontype || "expenses",
-            amount: Math.abs(data.amount) || 0,
-            repeat_options: data.repeat_options || {},
-            growth_options: data.growth_options || {},
-            extras: data.extras || "",
-          };
-          dataToSave.push(entry);
+          dataToSave.push(letEntry());
           if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
         }
       }
