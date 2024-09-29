@@ -150,8 +150,6 @@ const DailyBudget = () => {
   const daySecondPickerRef = useRef();
   const dayThirdPickerRef = useRef();
   const currentDateRef = useRef(null);
-  // const [accountId, setAccountId] = useState("201");
-  // const [userId, setUserId] = useState("1");
   const [continuousBalance, setContinuousBalance] = useState(0);
   const [startBalance, setStartBalance] = useState(null);
   const continuousBalanceRef = useRef(null); // Ref to hold the continuous balance
@@ -1224,17 +1222,7 @@ const DailyBudget = () => {
 
   return (
     <div className={styles.tablecontainer}>
-      {/* { */}
-      {/* !currentBudgetName || currentBudgetName === "" ? (
-         <BudgetSelect />
-       ) : ( */}
-      {/* <div
-        
-        // style={{ maxHeight: "66vh" }}
-      > */}
-      <div
-      // className={styles.tableheader}
-      >
+      <div>
         <table className={styles.table}>
           <thead>
             <tr>
@@ -1247,10 +1235,6 @@ const DailyBudget = () => {
               <th className={styles.balance}>Balance</th>
             </tr>
           </thead>
-          {/* </table> */}
-          {/* </div> */}
-          {/* <div className={styles.tablebody}>
-          <table className={styles.table}> */}
           <tbody>
             <tr>
               <td className={styles.date}></td>

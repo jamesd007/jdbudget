@@ -10,6 +10,7 @@ import {
   addTransaction,
 } from "../../store/Dexie";
 import EditTable from "../../utils/EditTable";
+import ExportData from "../../components/ExportData";
 import { BiImport } from "react-icons/bi";
 import { BiExport } from "react-icons/bi";
 import { FaRegTrashAlt, FaRegSave } from "react-icons/fa";
@@ -593,52 +594,39 @@ const TransactionsTest = () => {
         </div>
         <div>
           {editing && (
-            <div>
+            <div className={styles.displaycontainer}>
               <div
-                className={styles.displaycontainer}
-                style={{
-                  height:
-                    detailsSpaceHgt > 0
-                      ? `calc(100vh - ${detailsSpaceHgt} - 2rem)`
-                      : "calc(100vh - 8rem)",
-                }}
+                className={styles.transaction_button_grid}
+                style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
               >
-                <div
-                  className={styles.transaction_button_grid}
-                  style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
+                <button
+                  className={styles.transaction_main_buttons}
+                  onClick={() => setAddEntry(true)}
                 >
-                  <button
-                    className={styles.transaction_main_buttons}
-                    onClick={() => setAddEntry(true)}
-                  >
-                    <MdAddCircleOutline size={24} />
-                    Add
-                  </button>
-                  <button
-                    className={styles.transaction_main_buttons}
-                    disabled={checkedTransactions?.length <= 0}
-                    onClick={() => setDeleteConfirm(true)}
-                  >
-                    <FaRegTrashAlt size={iconSize * 0.9} />
-                    Delete
-                  </button>
-                  <Link
-                    to="/import"
-                    className={styles.transaction_main_buttons}
-                  >
-                    <BiImport size={24} />
-                    {/* <FaFileImport size={20} /> */}
-                    Import
-                  </Link>
-                  <button
-                    className={styles.transaction_main_buttons}
-                    onClick={() => handleExport()}
-                  >
-                    <BiExport size={24} />
-                    {/* <FaFileExport size={20} /> */}
-                    Export
-                  </button>
-                </div>
+                  <MdAddCircleOutline size={24} />
+                  Add
+                </button>
+                <button
+                  className={styles.transaction_main_buttons}
+                  disabled={checkedTransactions?.length <= 0}
+                  onClick={() => setDeleteConfirm(true)}
+                >
+                  <FaRegTrashAlt size={iconSize * 0.9} />
+                  Delete
+                </button>
+                <Link to="/import" className={styles.transaction_main_buttons}>
+                  <BiImport size={24} />
+                  Import
+                </Link>
+                <button
+                  className={styles.transaction_main_buttons}
+                  onClick={() => handleExport()}
+                >
+                  <BiExport size={24} />
+                  Export
+                </button>
+              </div>
+              <div className={styles.tabledisplaycontainer}>
                 {allTrans && allTrans?.length > 0 ? (
                   <EditTable
                     transactions={allTrans}
@@ -651,49 +639,22 @@ const TransactionsTest = () => {
                   <p style={{ marginLeft: "1rem" }}>No data found</p>
                 )}
               </div>
-              {/* <div
-                className="button_grid"
-                style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
-              >
-                <button
-                  className="transaction-main-buttons"
-                  disabled={checkedTransactions?.length <= 0}
-                  onClick={() => setDeleteConfirm(true)}
-                >
-                  <FaRegTrashAlt size={iconSize * 0.9} />
-                  Delete
-                </button>
-                <button
-                  className="transaction-main-buttons"
-                  onClick={() => setAddEntry(true)}
-                >
-                  <MdAddCircle size={24} />
-                  Add
-                </button>
-                <Link to="/import" className="transaction-main-buttons">
-                  <FaFileImport size={20} />
-                  Import
-                </Link>
-
-                <button
-                  className="transaction-main-buttons"
-                  onClick={() => handleImport()}
-                >
-                  <FaFileImport size={20} />
-                  Import
-                </button>
-                <button
-                  className="transaction-main-buttons"
-                  onClick={() => handleExport()}
-                >
-                  <FaFileExport size={20} />
-                  Export
-                </button>
-              </div> */}
             </div>
           )}
-          {/* {importOption && <ImportDataNew />} */}
-
+          {exportOption && (
+            <>
+              <span
+                style={{
+                  fontSize: "1.5rem",
+                  display: exportOption ? {} : "none",
+                }}
+              >
+                {" "}
+                - Export
+              </span>
+              <ExportData />
+            </>
+          )}
           {deleteConfirm && (
             <Modals
               title="Delete"

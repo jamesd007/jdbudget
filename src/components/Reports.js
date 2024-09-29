@@ -21,6 +21,8 @@ import CategorySummaries from "./CategorySummaries";
 import possHeaders from "../data/possHeaders";
 import { getDatabaseSize } from "../store/Dexie";
 import { useDataContext } from "../providers/DataProvider";
+import IncomeExpenseReport from "../components/reports/IncomeExpenseReport";
+import { FaMoneyCheckDollar } from "react-icons/fa6";
 
 const Reports = () => {
   const [allTrans, setAllTrans] = useState([]);
@@ -31,6 +33,7 @@ const Reports = () => {
   const [timePeriodOption, setTimePeriodOption] = useState(false);
   const [categoryOption, setCategoryOption] = useState(false);
   const [categorySummaryOption, setCategorySummaryOption] = useState(false);
+  const [incomeExpense, setIncomeExpense] = useState(false);
   const [colWidths, setColWidths] = useState([]);
   const [headersInfo, setHeadersInfo] = useState([]);
   const { currentAccNumber } = useDataContext();
@@ -40,6 +43,7 @@ const Reports = () => {
     getDatabaseSize().then((size) => {
       console.log(`Database size: ${size} bytes`);
     });
+    console.log("tedtestR currentAccNumber=", currentAccNumber);
   }, []);
 
   const handleMenuClick = () => {
@@ -52,6 +56,7 @@ const Reports = () => {
     setTimePeriodOption(false);
     setCategoryOption(false);
     setCategorySummaryOption(false);
+    setIncomeExpense(false);
   };
 
   const handleDataForTimePeriod = () => {
@@ -60,6 +65,7 @@ const Reports = () => {
     setDatabaseOption(false);
     setCategoryOption(false);
     setCategorySummaryOption(false);
+    setIncomeExpense(false);
   };
 
   const handleCategoryReport = () => {
@@ -68,6 +74,16 @@ const Reports = () => {
     setTimePeriodOption(false);
     setCategoryOption(true);
     setCategorySummaryOption(false);
+    setIncomeExpense(false);
+  };
+
+  const handleIncomeExpensesReport = () => {
+    setOpenReportsMenu(false);
+    setDatabaseOption(false);
+    setTimePeriodOption(false);
+    setCategoryOption(false);
+    setCategorySummaryOption(false);
+    setIncomeExpense(true);
   };
 
   const handleCategorySummariesReport = () => {
@@ -76,6 +92,7 @@ const Reports = () => {
     setTimePeriodOption(false);
     setCategoryOption(false);
     setCategorySummaryOption(true);
+    setIncomeExpense(false);
   };
 
   const handleDescriptionReport = () => {
@@ -84,6 +101,7 @@ const Reports = () => {
     setTimePeriodOption(false);
     setCategoryOption(false);
     setCategorySummaryOption(false);
+    setIncomeExpense(false);
   };
 
   const handleBudgetComparisonReport = () => {
@@ -92,6 +110,7 @@ const Reports = () => {
     setTimePeriodOption(false);
     setCategoryOption(false);
     setCategorySummaryOption(false);
+    setIncomeExpense(false);
   };
 
   const handleClose = () => {
@@ -144,6 +163,13 @@ const Reports = () => {
       goToMenu: "",
     },
     {
+      leftIcon: <FaMoneyCheckDollar size={24} />,
+      text: "Income and Expenses",
+      callback: handleIncomeExpensesReport,
+      permissionLevels: ["any"],
+      goToMenu: "",
+    },
+    {
       leftIcon: <MdDescription size={24} />,
       text: "Description",
       callback: handleDescriptionReport,
@@ -177,12 +203,13 @@ const Reports = () => {
     const fetchData = async () => {
       try {
         const transactions = await getAllTransactions(currentAccNumber);
+        console.log("tedtestRR transactions=", transactions);
         setAllTrans(transactions);
-        console.log("Fetched transactions:", transactions);
         const keys = new Set();
         transactions.forEach((item) => {
           Object.keys(item).forEach((key) => keys.add(key));
         });
+        console.log("tedtestRR keys=", keys);
         // Convert the set to an array and sort the keys as needed
         setHeadersInfo(Array.from(keys));
         setColWidths(createColWidthsArray(Array.from(keys)));
@@ -312,6 +339,20 @@ const Reports = () => {
                 headers={headersInfo}
               />
             </div>
+          </>
+        )}
+        {incomeExpense && (
+          <>
+            <span
+              style={{
+                fontSize: "1.5rem",
+                // display: categoryOption ? {} : "none",
+              }}
+            >
+              {" "}
+              - Income and Expenses
+            </span>
+            <IncomeExpenseReport transactions={allTrans} />
           </>
         )}
         {categoryOption && (

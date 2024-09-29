@@ -9,6 +9,12 @@
   height: 100%; /* Makes the input fill the height of the cell */
 }
 
+.edittable {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
 .edittable tr {
   height: auto; /* Let the row height adjust automatically */
 }

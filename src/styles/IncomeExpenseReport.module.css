@@ -1,9 +1,11 @@
 .tablecontainer {
+  font-size: 0.8rem;
   overflow: auto;
   max-height: 100%;
   width: 90%;
-  height: 80vh;
-  background-color: #f7f0e4;
+  height: 90vh;
+  background-color: #fcf9f5;
+  margin-left: 2.5%;
 }
 
 .table {
@@ -12,10 +14,16 @@
   width: 100%;
 }
 
+th {
+  cursor: pointer;
+}
+
 .table th,
 .table td {
-  /* padding: 8px; */
+  /* padding: 0;
+    margin: 0; */
   border: 1px solid #ddd;
+  line-height: 1;
 }
 
 .table th {
@@ -33,26 +41,27 @@ thead th {
 
 th,
 td {
-  /* padding: 8px; */
+  padding: 0;
+  margin: 0;
   text-align: left;
-  width: 150px; /* Set specific width for proper alignment */
+  line-height: 1;
 }
+
 thead tr {
   border-bottom: 2px solid darkslategray;
 }
 
 tbody tr:nth-child(odd) {
-  background-color: #f2f2f2; /* Optional: add row striping for readability */
+  background-color: #e4e2df; /* Optional: add row striping for readability */
 }
 
 .tablebody {
-  max-height: 68vh;
+  max-height: 80vh;
   overflow: auto;
 }
 
-.editcheckbox {
-  font-size: 0.8rem;
-  width: 1.2rem;
+.accountid {
+  width: 5.8rem;
 }
 
 .date {
@@ -69,29 +78,30 @@ tbody tr:nth-child(odd) {
 }
 
 .category {
-  width: 10rem;
+  width: 8rem;
+}
+
+.incexp {
+  width: 5.5rem;
+  padding: 0.1rem;
 }
 
 .dr {
-  width: 8rem;
+  width: 5.5rem;
 }
 
 .cr {
-  width: 8rem;
+  width: 5.5rem;
 }
 
-.balance {
-  width: 8rem;
-}
-
-.budget_main_buttons {
+.reports_main_buttons {
   height: fit-content;
   width: fit-content;
   border: none;
   background: transparent;
   /* background-color: lightblue;
-  border: 1px solid darkblue;
-  border-radius: 0.5rem; */
+      border: 1px solid darkblue;
+      border-radius: 0.5rem; */
   display: flex;
   align-items: center;
   gap: 0.1rem;
@@ -104,7 +114,7 @@ tbody tr:nth-child(odd) {
   margin-left: 0.5rem;
 }
 
-.budget_button_grid {
+.reports_button_grid {
   /* position: relative; */
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
@@ -113,4 +123,25 @@ tbody tr:nth-child(odd) {
   right: 0%;
   bottom: 4%;
   /* margin-top: 1rem; */
+}
+
+.tableinput {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  outline: none;
+  box-sizing: border-box; /* Ensures padding and border are included in the element's total width and height */
+  line-height: 1; /* Adjusts the line height */
+  height: 100%; /* Makes the input fill the height of the cell */
+}
+
+.table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+}
+
+.table tr {
+  height: auto; /* Let the row height adjust automatically */
 }

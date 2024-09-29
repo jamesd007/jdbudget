@@ -1,11 +1,21 @@
 .displaycontainer {
   width: 90%;
-  height: 80vh;
+  height: 90vh;
   margin-left: 2.5%;
   padding: 0 1rem 1rem 1rem;
   background-color: #f7f0e4;
   overflow: auto;
-  margin-top: 1rem;
+  /* margin-top: 1rem; */
+}
+
+.tabledisplaycontainer {
+  width: 90%;
+  height: 85vh;
+  /* margin-left: 2.5%; */
+  /* padding: 0 1rem 1rem 1rem; */
+  background-color: #f7f0e4;
+  overflow: auto;
+  /* margin-top: 1rem; */
 }
 
 .transaction_details_container {
@@ -30,6 +40,7 @@
 }
 
 .transaction_button_grid {
+  position: sticky;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
   align-items: center;

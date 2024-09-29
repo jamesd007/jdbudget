@@ -317,8 +317,7 @@ const EditTable = ({
                 <th className={styles.balance}>Balance</th>
               </tr>
             </thead>
-            <tbody className="edittablebody">
-              {/*TODO  tedtest there is no editablebody */}
+            <tbody>
               <tr>
                 <td colSpan="8">
                   <input

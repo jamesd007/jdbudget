@@ -151,6 +151,10 @@ async function getAllCategories() {
   return await db.category_descriptions.toArray();
 }
 
+async function addCategory(categoryData) {
+  return await db.category_descriptions.add(categoryData);
+}
+
 async function updateCategories(id, updatedData) {
   try {
     await db.category_descriptions.update(id, updatedData);
@@ -171,6 +175,7 @@ export {
   deleteTransaction,
   updateTransaction,
   getAllCategories,
+  addCategory,
   updateCategories,
   db,
   getDatabaseSize,

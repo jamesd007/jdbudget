@@ -1,4 +1,4 @@
-.category-work-container {
+.category-main-container {
   /* position: absolute; */
   /* height: calc(96% - 2.5rem); */
   /* width: 96%;
@@ -9,6 +9,19 @@
   width: 100vw;
   /* position: absolute; */
   height: 100vh;
+}
+
+.category-work-container {
+  /* position: absolute; */
+  /* height: calc(96% - 2.5rem); */
+  /* width: 96%;
+  left: 2%; */
+  /* top: calc(2% + 2.5rem); */
+  background-color: lightsteelblue;
+  padding: 1rem;
+  width: 100vw;
+  height: fit-content;
+  max-height: 90vh;
 }
 
 .category-details-container {

@@ -84,7 +84,7 @@ const CategoryDropdown = () => {
       {transactionsFound ? (
         <ReportsTable
           allTrans={transactionsFound}
-          colWidthArr={colWidths}
+          // colWidthArr={colWidths}
           headers={headersInfo}
         />
       ) : (

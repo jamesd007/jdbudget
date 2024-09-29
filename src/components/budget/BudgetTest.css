@@ -23,9 +23,12 @@
 
 .budget-workspace-container {
   width: 90%;
-  height: calc(100% - 10rem);
-  margin-top: 0.5rem;
+  height: 85vh;
+  /* margin-top: 0.5rem; */
   margin-left: 2.5%;
+  padding: 0 1rem 1rem 1rem;
+  background-color: #f7f0e4;
+  overflow: auto;
 }
 
 .button-submit {

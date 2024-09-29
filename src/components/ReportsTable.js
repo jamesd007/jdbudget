@@ -1,21 +1,194 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useMemo } from "react";
 import { BiSolidUpArrow } from "react-icons/bi";
 import { BiSolidDownArrow } from "react-icons/bi";
 import "../styles/ReportsStyles.css";
+import styles from "../styles/Reports.module.css";
+import dayjs from "dayjs";
 
 const ReportsTable = ({ allTrans, colWidthArr, headers, ...props }) => {
+  // console.log("tedtestRS reports colWidthArr=", colWidthArr);
+  console.log("tedtestRS reports headers=", headers);
+  console.log("tedtestRS reports props=", props);
   const [selectedRows, setselectedRows] = useState([]);
   const [sortedTrans, setSortedTrans] = useState([]);
+  const [sortConfig, setSortConfig] = useState({
+    key: "date",
+    direction: "ascending",
+  });
+
   useEffect(() => {
     setSortedTrans(allTrans);
   }, [allTrans]);
-  // const [sortConfig, setSortConfig] = useState({
-  //   key: null,
-  //   direction: "ascending",
-  // });
+
+  useEffect(() => {
+    console.log("tedtestRZ sortConfig=", sortConfig);
+  }, [sortConfig]);
+
+  const sortedTransactions = useMemo(() => {
+    console.log("tedtestS sortedTransactions started sortConfig=", sortConfig);
+    const sortedData = [...sortedTrans];
+    console.log("tedtestS sortedData=", sortedData);
+    if (sortConfig.key) {
+      let index = sortConfig.key.toLowerCase();
+      console.log(
+        "tedtestSORT1 Sorting by",
+        sortConfig.key,
+        "   index=",
+        index,
+        " dir=",
+        sortConfig.direction
+      );
+      // Sorting by date
+      if (index === "date") {
+        sortedData.sort((a, b) => {
+          const dateA = new Date(a[index]);
+          const dateB = new Date(b[index]);
+          return sortConfig.direction === "ascending"
+            ? dateA - dateB
+            : dateB - dateA;
+        });
+      }
+      // Sorting by numeric amount
+      else if (index === "dr") {
+        sortedData.sort((a, b) => {
+          // Calculate temporary values
+          const tempValueA =
+            a["transactiontype"] === "income"
+              ? 0
+              : parseFloat(a["amount"]) || 0;
+          const tempValueB =
+            b["transactiontype"] === "income"
+              ? 0
+              : parseFloat(b["amount"]) || 0;
+
+          // Prioritize non-zero values
+          if (tempValueA === 0 && tempValueB !== 0) return 1;
+          if (tempValueA !== 0 && tempValueB === 0) return -1;
+
+          // If both are non-zero, sort by the value
+          return sortConfig.direction === "ascending"
+            ? tempValueA - tempValueB
+            : tempValueB - tempValueA;
+        });
+      } else if (index === "cr") {
+        sortedData.sort((a, b) => {
+          // Calculate temporary values
+          const tempValueA =
+            a["transactiontype"] === "expenses"
+              ? 0
+              : parseFloat(a["amount"]) || 0;
+          const tempValueB =
+            b["transactiontype"] === "expenses"
+              ? 0
+              : parseFloat(b["amount"]) || 0;
+
+          // Prioritize non-zero values
+          if (tempValueA === 0 && tempValueB !== 0) return 1;
+          if (tempValueA !== 0 && tempValueB === 0) return -1;
+
+          // If both are non-zero, sort by the value
+          return sortConfig.direction === "ascending"
+            ? tempValueA - tempValueB
+            : tempValueB - tempValueA;
+        });
+      }
+
+      // Sorting by strings
+      else if (typeof sortedData[0][index] === "string") {
+        sortedData.sort((a, b) => {
+          const valueA = a[index].toLowerCase();
+          const valueB = b[index].toLowerCase();
+          return sortConfig.direction === "ascending"
+            ? valueA.localeCompare(valueB)
+            : valueB.localeCompare(valueA);
+        });
+      }
+      // Sorting for any other type (e.g., numbers)
+      else {
+        sortedData.sort((a, b) => {
+          if (a[index] < b[index]) {
+            return sortConfig.direction === "ascending" ? -1 : 1;
+          }
+          if (a[index] > b[index]) {
+            return sortConfig.direction === "ascending" ? 1 : -1;
+          }
+          return 0;
+        });
+      }
+    }
+
+    console.log("tedtestS sortedData after sort=", sortedData);
+    return sortedData;
+  }, [sortedTrans, sortConfig]);
+
+  // const sortedTransactions = useMemo(() => {
+  //   console.log("tedtestS sortedTransactions started sortConfig=", sortConfig);
+  //   const sortedData = [...sortedTrans];
+  //   console.log("tedtestS sortedData=", sortedData);
+  //   if (sortConfig.key) {
+  //     let index = sortConfig.key.toLowerCase();
+  //     console.log(
+  //       "tedtestSORT1 Sorting by",
+  //       sortConfig.key,
+  //       "   index=",
+  //       index,
+  //       " dir=",
+  //       sortConfig.direction
+  //     );
+  //     if (index === "date") {
+  //       sortedData.sort((a, b) => {
+  //         // sortedData.sort((a, b) => {
+  //         const dateA = new Date(a[index]);
+  //         const dateB = new Date(b[index]);
+  //         return sortConfig.direction === "ascending"
+  //           ? dateA - dateB
+  //           : dateB - dateA;
+  //       });
+  //     } else {
+  //       sortedData.sort((a, b) => {
+  //         if (index === "amount") {
+  //           sortedData.sort((a, b) => {
+  //             const valueA = parseFloat(a[sortConfig.key]) || 0;
+  //             const valueB = parseFloat(b[sortConfig.key]) || 0;
+  //             return sortConfig.direction === "ascending"
+  //               ? valueA - valueB
+  //               : valueB - valueA;
+  //           });
+  //         } else if (typeof a[index] === "string") {
+  //           console.log(
+  //             "tedtestSORT2 Comparing:",
+  //             a[index].toLocaleLowerCase(),
+  //             b[index].toLocaleLowerCase()
+  //           );
+  //           sortedData.sort((a, b) => {
+  //             const valueA = a[index].toLowerCase();
+  //             const valueB = b[index].toLowerCase();
+  //             return sortConfig.direction === "ascending"
+  //               ? valueA.localeCompare(valueB)
+  //               : valueB.localeCompare(valueA);
+  //           });
+  //         } else if (a[index] < b[index]) {
+  //           return sortConfig.direction === "ascending" ? -1 : 1;
+  //         }
+  //         if (a[index] > b[index]) {
+  //           return sortConfig.direction === "ascending" ? 1 : -1;
+  //         }
+  //         return 0;
+  //       });
+  //     }
+  //   }
+  //   return sortedData;
+  // }, [sortedTrans, sortConfig]);
+
+  const requestSort = (key) => {
+    let direction = "ascending";
+    if (sortConfig.key === key && sortConfig.direction === "ascending") {
+      direction = "descending";
+    }
+    setSortConfig({ key, direction });
+  };
 
   // const sortedTrans = React.useMemo(() => {
-  //   console.log("tedtest sortedtrans allTrans=", allTrans);
   //   if (!sortConfig.key) return allTrans;
 
   //   const sortedArray = [...allTrans].sort((a, b) => {
@@ -50,72 +223,140 @@ const ReportsTable = ({ allTrans, colWidthArr, headers, ...props }) => {
   //   return "";
   // };
 
-  const parseDate = (dateStr) => {
-    // Ensure the date string is in the expected format: YYYYMMDD
-    if (dateStr.length !== 8) {
-      return null;
-    }
-    const year = dateStr.substring(0, 4);
-    const month = dateStr.substring(4, 6);
-    const day = dateStr.substring(6, 8);
-    return new Date(`${year}-${month}-${day}`);
-  };
-
-  const generateGridTemplateColumns = () => {
-    if (props?.colWidth) {
-      return `repeat(${headers?.length + 1}, ${props?.colWidth})`;
-    } else if (colWidthArr && colWidthArr.length > 0) {
-      return `${colWidthArr.join(" ")}`;
-    } else {
-      return `repeat(${headers?.length + 2}, 3rem)`; // +2 for the extra column with 2rem width
-    }
-  };
-
-  const handleSelectAll = () => {
-    if (selectedRows?.length === sortedTrans?.length) {
-      setselectedRows([]);
-    } else {
-      setselectedRows(sortedTrans?.map((item) => item.id));
-    }
+  const getDayOfWeek = (date) => {
+    return dayjs(date).format("ddd");
   };
 
   return (
-    <div className="reports-table-content">
-      {sortedTrans && sortedTrans.length > 0 ? (
-        <table>
+    <div
+      //  className="reports-table-content"
+      className={styles.tablecontainer}
+    >
+      {sortedTransactions && sortedTrans.length > 0 ? (
+        <table className={styles.table}>
           <thead>
             <tr>
               <th
-                className="reports-checkbox-row"
-                style={{
-                  display: "grid",
-                  gridTemplateColumns: generateGridTemplateColumns(),
-                  fontSize: "0.9rem",
-                  borderBottom: "1px solid black",
-                }}
+                onClick={() => requestSort("account_id")}
+                className={styles.accountid}
               >
-                {headers.map((item, index) => (
-                  <span key={index}>{item}</span>
-                ))}
+                Account_id{" "}
+                {sortConfig.key === "account_id" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
+              </th>
+              <th onClick={() => requestSort("date")} className={styles.date}>
+                Date{" "}
+                {sortConfig.key === "date" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
+              </th>
+              <th className={styles.day}>Day</th>
+              <th
+                className={styles.description}
+                onClick={() => requestSort("description")}
+              >
+                Description{" "}
+                {sortConfig.key === "description" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
+              </th>
+              <th
+                className={styles.category}
+                onClick={() => requestSort("category_description")}
+              >
+                Category{" "}
+                {sortConfig.key === "category_description" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
+              </th>
+              <th
+                className={styles.transactiontype}
+                onClick={() => requestSort("transactiontype")}
+              >
+                inc/exp{" "}
+                {sortConfig.key === "transactiontype" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
+              </th>
+              <th className={styles.dr} onClick={() => requestSort("dr")}>
+                Dr{" "}
+                {sortConfig.key === "dr" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
+              </th>
+              <th className={styles.cr} onClick={() => requestSort("cr")}>
+                Cr{" "}
+                {sortConfig.key === "cr" ? (
+                  sortConfig.direction === "ascending" ? (
+                    <BiSolidUpArrow />
+                  ) : (
+                    <BiSolidDownArrow />
+                  )
+                ) : null}
               </th>
             </tr>
           </thead>
           <tbody>
-            {sortedTrans.map((item, index) => {
+            {sortedTransactions.map((item, index) => {
               return (
-                <tr
-                  key={index}
-                  className="reports-checkbox-row"
-                  style={{
-                    display: "grid",
-                    gridTemplateColumns: generateGridTemplateColumns(),
-                  }}
-                >
-                  {headers.map((key, keyIndex) => (
-                    <td key={keyIndex}>
-                      <span>{item[key]}</span>
-                    </td>
-                  ))}
+                <tr key={item.id}>
+                  <td className={styles.accountid}>{item.account_id}</td>
+                  <td className={styles.date}>{item.date}</td>
+                  <td //day
+                    className={styles.day}
+                  >
+                    {getDayOfWeek(item.date)}
+                  </td>
+                  <td //description
+                    className={styles.description}
+                  >
+                    {item.description}
+                  </td>
+                  <td //category
+                    className={styles.category}
+                  >
+                    {item.category_description}
+                  </td>
+                  <td //incexp
+                    className={styles.incexp}
+                  >
+                    {item.transactiontype}
+                  </td>
+                  <td //dr
+                    className={styles.dr}
+                  >
+                    {item.transactiontype === "expenses" && item.amount}
+                  </td>
+                  <td //cr
+                    className={styles.cr}
+                  >
+                    {item.transactiontype === "income" && item.amount}
+                  </td>
                 </tr>
               );
             })}

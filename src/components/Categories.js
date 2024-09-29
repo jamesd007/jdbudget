@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useEffect, useContext, useRef } from "react";
 import { getAllCategories } from "../store/Dexie";
 import { updateCategories } from "../store/Dexie";
 import { UserContext } from "../contexts/UserContext";
@@ -12,11 +12,11 @@ import { BiImport } from "react-icons/bi";
 import { BiExport } from "react-icons/bi";
 import { Link } from "react-router-dom";
 import Modals from "../utils/Modals";
+import CategoryModal from "../components/categories/CategoryModal";
 
 const Categories = () => {
   const [allCategories, setAllCategories] = useState([]);
   const [selectedRows, setselectedRows] = useState([]);
-  //   const [editableRecord, setEditableRecord] = useState([]);
   const [originalValue, setOriginalValue] = useState({});
   const { user } = useContext(UserContext);
   const [checkedTransactions, setCheckedTransactions] = useState([]);
@@ -26,10 +26,8 @@ const Categories = () => {
   const [transactionDescriptions, setTransactionDescriptions] = useState([]);
   const [budgetTransactionDescriptions, setBudgetTransactionDescriptions] =
     useState([]);
-
-  useEffect(() => {
-    console.log("tedtesta selectedRows=", selectedRows);
-  }, [selectedRows]);
+  const [newCat, setNewCat] = useState(false);
+  const lastCategoryRef = useRef(null); // Create a reference for the last category row
 
   useEffect(() => {
     //getExistingCategories from dbase
@@ -37,22 +35,37 @@ const Categories = () => {
       try {
         let catRecs = await getAllCategories();
         setAllCategories(catRecs);
-        // setEditableRecord(catRecs);
       } catch (error) {
         console.error("Error retrieving categories:", error);
       }
     };
     getTheCategories();
-  }, []);
+    setNewCat(false);
+  }, [newCat]);
+
+  // Scroll to the last category when newCat changes
+  useEffect(() => {
+    if (newCat && lastCategoryRef.current) {
+      setTimeout(() => {
+        lastCategoryRef.current.scrollIntoView({
+          behavior: "smooth",
+          block: "end",
+        });
+      }, 0); // Delay scroll to make sure layout updates
+    }
+  }, [lastCategoryRef.current]);
 
   const handleCheckboxChange = (event, id) => {
     const isChecked = event.target.checked;
-    // setScrollPosition(tableRef.current.scrollTop);
     if (isChecked) {
       setselectedRows((prevState) => [...prevState, id]);
     } else {
       setselectedRows((prevState) => prevState.filter((item) => item !== id));
     }
+  };
+
+  const handleNewCat = async (val) => {
+    setNewCat(true);
   };
 
   const handleDataChange = (e, index) => {
@@ -63,7 +76,6 @@ const Categories = () => {
       [name]: value,
     };
     setAllCategories(updatedRecord);
-    // setRecord(updatedRecord); // Update parent state
   };
 
   const handleFocus = (e, index) => {
@@ -121,8 +133,7 @@ const Categories = () => {
   };
 
   const handleDelete = () => {
-    console.log("tedtestH delteconfirm");
-    //tedtest before deleting check if category is in use, if so, warn user and do not delete-
+    //before deleting check if category is in use, if so, warn user and do not delete-
     //  you can perhaps give user the transactions where the category is used
     // and then ask user to confirm deletion
     setDeleteConfirm(true);
@@ -172,66 +183,21 @@ const Categories = () => {
     }
   }
 
-  // async function searchSelectedCategories(selectedRows) {
-  //   try {
-  //     // Get the list of all category descriptions from the `transactions` table
-  //     // const allCategories = await db.transactions.toArray();
-
-  //     // Extract category descriptions using the selected indexes from selectedRows
-  //     const selectedCategories = selectedRows.map(
-  //       (index) => allCategories[index]?.category_description
-  //     );
-
-  //     // Filter out any undefined or invalid categories
-  //     const validCategories = selectedCategories.filter(Boolean);
-
-  //     // Search for matching records in `transactions` table
-  //     const transactionMatches = await db.transactions
-  //       .where("category_description")
-  //       .anyOf(validCategories)
-  //       .toArray();
-
-  //     // Search for matching records in `budgettransactions` table
-  //     const budgetTransactionMatches = await db.budgettransactions
-  //       .where("category")
-  //       .anyOf(validCategories)
-  //       .toArray();
-
-  //     // Combine results
-  //     const results = {
-  //       transactionMatches,
-  //       budgetTransactionMatches,
-  //     };
-  //     console.log("tedtestzzz results=", results);
-  //     // return <div>{results.transactionMatches.description}</div>;
-  //     // results;
-  //     return "testing";
-  //   } catch (error) {
-  //     console.error("Error searching for selected categories:", error);
-  //     throw error;
-  //   }
-  // }
-
   const handleFinalDelete = () => {
-    console.log("tedtestH final delete");
     setDeleteConfirm(false);
     //delete selected rows
     const updatedCategories = allCategories.filter(
       (item) => !selectedRows.includes(item.id)
     );
-    console.log("tedtestH updatedCategories=", updatedCategories);
-
     setAllCategories(updatedCategories);
     setselectedRows([]);
     db.category_descriptions.bulkDelete(selectedRows);
   };
 
   useEffect(() => {
-    console.log("tedtesta selectedRows=", selectedRows);
     async function fetchDescriptions() {
       try {
         const results = await searchSelectedCategories(selectedRows);
-        console.log("tedtestZZZ results=", results);
         // Return an object containing both category_description and description for transactions
         const transactionDesc = results.transactionMatches.map(
           (transaction) => ({
@@ -250,8 +216,6 @@ const Categories = () => {
         // Set the state with the extracted objects
         setTransactionDescriptions(transactionDesc);
         setBudgetTransactionDescriptions(budgetTransactionDesc);
-        console.log("tedtestZZZ transactionDesc=", transactionDesc);
-        console.log("tedtestZZZ budgetTransactionDesc=", budgetTransactionDesc);
       } catch (error) {
         console.error("Error fetching descriptions:", error);
       }
@@ -261,22 +225,16 @@ const Categories = () => {
 
   return (
     <div
-      className="category-work-container" //tedtest why does this hide the table?
+      className="category-main-container"
       style={{
         backgroundColor: "lightsteelblue",
       }}
     >
-      {/* <div className="budget-main-container"> */}
-
-      {/* <div> */}
       <span style={{ fontSize: "1.25rem", marginLeft: "1rem" }}>
         Categories
       </span>
-      {/* </div> */}
-      <div //container top
-        className="category-work-container"
-        // className="categories-details-container"
-        // ref={categories_details_container}
+      <div //container
+        className={styles.category_work_container}
       >
         <div
           className={styles.category_button_grid}
@@ -310,73 +268,101 @@ const Categories = () => {
             Export
           </button>
         </div>
+
         {allCategories && (
-          <table className={styles.table}>
-            <thead>
-              <tr>
-                <th className={styles.editcheckbox}></th>
-                <th className={styles.category_description}>Category</th>
-                <th className={styles.category_code}>Code</th>
-                <th className={styles.description}>Description</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td colSpan="4">
-                  <input
-                    type="checkbox"
-                    onChange={handleSelectAll}
-                    checked={selectedRows?.length === allCategories?.length}
-                  />
-                  Select all
-                </td>
-              </tr>
-              {allCategories.map((item, index) => (
-                <tr key={item.id}>
-                  <td className={styles.editcheckbox}>
+          <div className={styles.tablecontainer}>
+            <table className={styles.table}>
+              <thead>
+                <tr>
+                  <th className={styles.editcheckbox}></th>
+                  <th className={styles.category_description}>Category</th>
+                  <th className={styles.category_code}>Code</th>
+                  <th className={styles.description}>Description</th>
+                </tr>
+              </thead>
+              <tbody className={styles.tablebody}>
+                <tr>
+                  <td colSpan="4">
                     <input
                       type="checkbox"
-                      checked={selectedRows.includes(item.id)}
-                      onChange={(e) => handleCheckboxChange(e, item.id)}
+                      onChange={handleSelectAll}
+                      checked={selectedRows?.length === allCategories?.length}
                     />
-                  </td>
-                  <td className={styles.category_description}>
-                    <input
-                      className={styles.category_description}
-                      type="text"
-                      name="category_description"
-                      value={item.category_description}
-                      onChange={(e) => handleDataChange(e, index)}
-                      onFocus={(e) => handleFocus(e, index)}
-                      onBlur={(e) => handleBlur(e, index, allCategories)}
-                    />
-                  </td>
-                  <td className={styles.category_code}>
-                    <input
-                      className={styles.category_code}
-                      type="text"
-                      name="category_code"
-                      value={item.category_code}
-                      onChange={(e) => handleDataChange(e, index)}
-                      onFocus={(e) => handleFocus(e, index)}
-                      onBlur={(e) => handleBlur(e, index, allCategories)}
-                    />
-                  </td>
-                  <td className={styles.description}>
-                    <input
-                      className={styles.description}
-                      type="text"
-                      name="description"
-                      value={item.description}
-                      onChange={(e) => handleDataChange(e, index)}
-                      onFocus={(e) => handleFocus(e, index)}
-                      onBlur={(e) => handleBlur(e, index, allCategories)}
-                    />
+                    Select all
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+                {allCategories.map((item, index) => {
+                  console.log(
+                    "tedtestB allCategories.length=",
+                    allCategories.length,
+                    " index=",
+                    index,
+                    "  item=",
+                    item
+                  );
+                  return (
+                    <tr
+                      key={item.id}
+                      ref={
+                        index === allCategories.length - 1
+                          ? lastCategoryRef
+                          : null
+                      } // Attach ref to the last item
+                    >
+                      <td className={styles.editcheckbox}>
+                        <input
+                          type="checkbox"
+                          checked={selectedRows.includes(item.id)}
+                          onChange={(e) => handleCheckboxChange(e, item.id)}
+                        />
+                      </td>
+                      <td className={styles.category_description}>
+                        <input
+                          className={styles.category_description}
+                          type="text"
+                          name="category_description"
+                          value={item.category_description}
+                          onChange={(e) => handleDataChange(e, index)}
+                          onFocus={(e) => handleFocus(e, index)}
+                          onBlur={(e) => handleBlur(e, index, allCategories)}
+                        />
+                      </td>
+                      <td className={styles.category_code}>
+                        <input
+                          className={styles.category_code}
+                          type="text"
+                          name="category_code"
+                          value={item.category_code}
+                          onChange={(e) => handleDataChange(e, index)}
+                          onFocus={(e) => handleFocus(e, index)}
+                          onBlur={(e) => handleBlur(e, index, allCategories)}
+                        />
+                      </td>
+                      <td className={styles.description}>
+                        <input
+                          className={styles.description}
+                          type="text"
+                          name="description"
+                          value={item.description}
+                          onChange={(e) => handleDataChange(e, index)}
+                          onFocus={(e) => handleFocus(e, index)}
+                          onBlur={(e) => handleBlur(e, index, allCategories)}
+                        />
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
+        {addEntry && (
+          <CategoryModal
+            title="Categories"
+            setOpenCatModal={setAddEntry}
+            db={db}
+            setCatDescription={(val) => handleNewCat(val)}
+          />
         )}
         {deleteConfirm && (
           <Modals

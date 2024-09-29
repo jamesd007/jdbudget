@@ -15,7 +15,12 @@ function LoginForm() {
   const [remember, setRemember] = useState(false);
   const [showReg, setShowReg] = useState(false);
   const { login } = useContext(UserContext);
-  const { currentBudgetName, setCurrentBudgetName } = useDataContext();
+  const {
+    currentBudgetName,
+    setCurrentBudgetName,
+    currentAccNumber,
+    setCurrentAccNumber,
+  } = useDataContext();
 
   useEffect(() => {
     // Set focus when the component mounts
@@ -51,6 +56,7 @@ function LoginForm() {
           id: chkUser.id,
         };
         setCurrentBudgetName(chkUser.last_budget);
+        setCurrentAccNumber(chkUser.last_account);
         login(obj);
       } else {
         window.alert("ERROR user or password not on system");

@@ -10,8 +10,6 @@ import DailyBudget from "../../components/DailyBudget";
 import Modals from "../../utils/Modals";
 import { BiImport } from "react-icons/bi";
 import { BiExport } from "react-icons/bi";
-import { FaRegTrashAlt, FaRegSave } from "react-icons/fa";
-import { MdAddCircleOutline } from "react-icons/md";
 import { Link } from "react-router-dom";
 
 const BudgetTest = () => {
@@ -283,12 +281,12 @@ const BudgetTest = () => {
 
       <div //container workspace
         className="budget-workspace-container"
-        style={{
-          height:
-            detailsSpaceHgt > 0
-              ? `calc(100vh - ${detailsSpaceHgt} - 5rem)`
-              : "calc(100vh - 10rem)",
-        }}
+        // style={{
+        //   height:
+        //     detailsSpaceHgt > 0
+        //       ? `calc(100vh - ${detailsSpaceHgt} - 5rem)`
+        //       : "calc(100vh - 10rem)",
+        // }}
       >
         <div
           className={styles.budget_button_grid}
