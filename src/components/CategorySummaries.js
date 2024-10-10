@@ -74,10 +74,6 @@ const CategorySummaries = () => {
   //   getData(startDate, endDate);
   // }, [startDate, endDate]);
 
-  // useEffect(() => {
-  //   console.log("tedtestTT transactionsForSummary=", transactionsForSummary);
-  // }, [transactionsForSummary]);
-
   const fetchTransactions = async (startMonth, endMonth) => {
     let currentMonth = startMonth;
     const transactionsByMonth = {};

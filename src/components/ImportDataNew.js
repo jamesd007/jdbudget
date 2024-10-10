@@ -126,7 +126,13 @@ const ImportDataNew = (props) => {
           if (tmpAccNumber) {
             setCurrentAccNumber(tmpAccNumber);
             setGetAccNumber(true);
-          } else setGetAccNumber(false);
+          } else {
+            alert(
+              "No account number found for this user, please enter or create account"
+            );
+            return null;
+            // setGetAccNumber(false);
+          }
         }
         return accounts.map((acc) => acc.account_id);
       } catch (error) {
@@ -156,7 +162,9 @@ const ImportDataNew = (props) => {
         console.log("error getting opening balance", error);
       }
     };
-    getOpeningBalance();
+    if (currentAccNumber) {
+      getOpeningBalance();
+    }
   }, [currentAccNumber]);
 
   function findPotentialAccountNumber(fieldsData) {
@@ -362,7 +370,7 @@ const ImportDataNew = (props) => {
     if (!lines || lines.length <= 0) {
       return;
     }
-    getOpenCloseBalances();
+    if (lines) getOpenCloseBalances();
   }, [lines]);
 
   //getaccount_id
@@ -709,11 +717,8 @@ const ImportDataNew = (props) => {
         }
       }
       const duplicate = await db.transactions
-        .where({
-          date: transaction.date,
-          description: transaction.description,
-          amount: transaction.amount,
-        })
+        .where("[date+description+amount]")
+        .equals([transaction.date, transaction.description, transaction.amount])
         .first();
       // If no duplicate found, add the transaction
       let toBeAdded = true;
@@ -784,9 +789,11 @@ const ImportDataNew = (props) => {
     }
 
     const result = [];
+    let dblVal = false;
     lines?.forEach((line) => {
       const dataValues = line?.data?.split(",");
       const entry = {};
+      dblVal = false;
       editableHeaders.forEach((header, index) => {
         if (
           header !== "ignore" &&
@@ -800,10 +807,40 @@ const ImportDataNew = (props) => {
             const parsedValue = parseFloat(valueWithoutSpaces);
             if (header === "amount_dr" || header === "amount_cr") {
               if (!isNaN(parsedValue)) {
-                // If it is a number, use the parsed value
-                if (header === "amount_dr")
-                  entry["amount"] = parseFloat((parsedValue * -1).toFixed(2));
-                else entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
+                if (header === "amount_dr" && parsedValue !== 0) {
+                  let crValue = dataValues[index + 1]?.replace(/\s+/g, "");
+                  if (
+                    parseFloat(crValue?.trim()) &&
+                    !isNaN(parseFloat(crValue?.trim())) &&
+                    parseFloat(crValue?.trim()) !== 0
+                  ) {
+                    dblVal = true;
+                    let valAmount = 0;
+                    if (parseFloat(crValue?.trim()) > parsedValue) {
+                      valAmount = parseFloat(crValue?.trim()) - parsedValue;
+                      entry["amount"] = parseFloat((valAmount * 1).toFixed(2));
+                      entry["transactiontype"] = "income";
+                    } else {
+                      valAmount = parsedValue - parseFloat(crValue?.trim());
+                      entry["amount"] = parseFloat((valAmount * 1).toFixed(2));
+                      entry["transactiontype"] = "expenses";
+                    }
+                  } else if (header === "amount_dr") {
+                    entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
+                    entry["transactiontype"] = "expenses";
+                  }
+                } else if (header === "amount_cr") {
+                  if (dblVal) {
+                    //do nothing?
+                  } else {
+                    entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
+                    entry["transactiontype"] = "income";
+                  }
+                }
+                // entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
+                // if (header === "amount_dr")
+                //   entry["transactiontype"] = "expenses";
+                // if (header === "amount_cr") entry["transactiontype"] = "income";
               }
             } else {
               //Determine if the value is a valid number
@@ -1085,7 +1122,7 @@ const ImportDataNew = (props) => {
 
   const handleNewCurrAccNo = () => {
     alert(
-      "use dropdown menu on Account No. and select New to enter new accoutn number"
+      "use dropdown menu on Account No. and select New to enter new account number"
     );
     setAccForDataModal(false);
   };
@@ -1147,7 +1184,8 @@ const ImportDataNew = (props) => {
       </div>
 
       <FileUpload></FileUpload>
-      {!getAccNumber && ( //put getaccnumber here but tie it to no current account number
+      {!currentAccNumber && alert("Please enter or create an account number")}
+      {/* {!getAccNumber && ( //put getaccnumber here but tie it to no current account number
         <Modals
           title="Account number"
           onClose={() => setGetAccNumber(true)}
@@ -1184,7 +1222,7 @@ const ImportDataNew = (props) => {
             onKeyDown={handleKeyDown}
           ></input>
         </Modals>
-      )}
+      )} */}
       {fileContent && currentAccNumber && currentAccNumber.length > 0 && (
         <div className="indent-left-margin" style={{ width: "100%" }}>
           <b>File Content:</b>

@@ -85,13 +85,15 @@ tbody tr:nth-child(odd) {
 
 .date {
   font-size: 0.8rem;
-  width: 6.5rem;
+  width: 6rem;
   font-family: Arial, sans-serif;
+  box-sizing: border-box;
 }
 
 .day {
   font-size: 0.8rem;
   width: 2rem;
+  padding-left: 0.15rem;
 }
 
 .description {
@@ -131,4 +133,5 @@ tbody tr:nth-child(odd) {
   width: 6rem;
   text-align: right;
   min-width: 6rem;
+  padding-right: 0.5rem;
 }

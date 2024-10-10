@@ -15,6 +15,8 @@ import Logout from "./Logout";
 import BudgetTest from "./budget/BudgetTest";
 import TransactionsTest from "./transactions/TransactionsTest";
 import ImportDataNew from "./ImportDataNew";
+// import BudgetList from "../components/budget/BudgetList";
+import InfiniteCalendar from "../components/budget/InfiniteCalendar";
 
 function FrontPage() {
   return (
@@ -25,6 +27,8 @@ function FrontPage() {
         {/* <Route path="/budget" element={<BudgetMenu />} /> */}
         <Route path="/budget" element={<BudgetTest />} />
         {/* <Route path="/transactions" element={<Transactions />} /> */}
+        <Route path="/testwindow" element={<InfiniteCalendar />} />
+        {/* <Route path="/testwindow" element={<BudgetList />} /> */}
         <Route path="/transactions" element={<TransactionsTest />} />
         <Route path="/categories" element={<Categories />} />
         <Route path="/analysis" element={<Analysis />} />

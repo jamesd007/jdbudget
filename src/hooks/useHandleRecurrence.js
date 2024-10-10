@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect } from "react";
 import dayjs from "dayjs";
-import { addBudgets } from "../store/Dexie";
+import { addBudgets, addBudgetTransaction } from "../store/Dexie";
 
 const useHandleRecurrence = (setAllBudgets) => {
   const months = [
@@ -303,7 +303,9 @@ const useHandleRecurrence = (setAllBudgets) => {
               newDate.setDate(initialDate.getDate() + count * daysToRepeat); // Add count days to the initial date
               dataToSave.push(letEntry());
             }
-            if (dataToSave?.length > 0) await saveToDatabase(dataToSave);
+            if (dataToSave?.length > 0)
+              for (let count = 0; count < dataToSave.length; count++)
+                await saveToDatabase(dataToSave[count]);
           }
         } else if ((repeatData.endSpec = "noEndDate")) {
           endSelectedDay = getFinancialYearEndDate(initialDate);
@@ -738,8 +740,12 @@ const useHandleRecurrence = (setAllBudgets) => {
   };
 
   const saveToDatabase = async (data) => {
-    await addBudgets(data);
-    setAllBudgets((prevBudgets) => [...prevBudgets, ...data]);
+    await addBudgetTransaction(data);
+    // Ensure data is an array
+    setAllBudgets((prevBudgets) => [
+      ...prevBudgets,
+      ...(Array.isArray(data) ? data : [data]),
+    ]);
   };
 
   return handleRecurrence;

@@ -403,9 +403,16 @@ const TransactionsTest = () => {
   const handleChangeOpenBal = (e) => {
     e.preventDefault();
     const value = e.target.value.trim();
+    // Allow "-" or any other incomplete input, temporarily keep the value as string
+    if (!isNaN(value) || value === "-" || value === "") {
+      setOpeningBalance(value); // Keep the raw input if valid or incomplete
+    }
+
+    // If it's a valid number (not just "-", ""), then convert it to a float
     const floatValue = parseFloat(value);
-    console.log(`parseFloat(${value}) = ${floatValue}`);
-    setOpeningBalance(parseFloat(parseFloat(e.target.value).toFixed(2)));
+    if (!isNaN(floatValue)) {
+      setOpeningBalance(parseFloat(floatValue.toFixed(2)));
+    }
   };
 
   const handleChangeAccNo = async (val) => {
@@ -569,6 +576,7 @@ const TransactionsTest = () => {
               onChange={(e) => {
                 const selectedValue = e.target.value;
                 if (selectedValue === "new") {
+                  // <CreateNewAccount />;
                   handleCreateNewAccount(); // This function should open a modal or prompt for budget creation
                 } else {
                   handleChangeAccNo(selectedValue);
@@ -614,10 +622,27 @@ const TransactionsTest = () => {
                   <FaRegTrashAlt size={iconSize * 0.9} />
                   Delete
                 </button>
-                <Link to="/import" className={styles.transaction_main_buttons}>
+                {currentAccNumber ? (
+                  <Link
+                    to="/import"
+                    className={styles.transaction_main_buttons}
+                  >
+                    <BiImport size={24} />
+                    Import
+                  </Link>
+                ) : (
+                  <span
+                    className={`${styles.transaction_main_buttons} ${styles.disabled}`}
+                  >
+                    <BiImport size={24} />
+                    Import
+                  </span>
+                )}
+
+                {/* <Link to="/import" className={styles.transaction_main_buttons}>
                   <BiImport size={24} />
                   Import
-                </Link>
+                </Link> */}
                 <button
                   className={styles.transaction_main_buttons}
                   onClick={() => handleExport()}

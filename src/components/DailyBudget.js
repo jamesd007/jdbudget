@@ -9,7 +9,7 @@ import db from "../store/Dexie";
 import {
   getAllBudgets,
   getAllCategories,
-  addBudget,
+  addBudgetTransaction,
   deleteBudget,
   updateBudget,
 } from "../store/Dexie";
@@ -49,12 +49,12 @@ const DailyBudget = () => {
   ];
   const [calendar, setCalendar] = useState([]);
   const [currentDate, setCurrentDate] = useState(null);
-  const [budgetName, setBudgetName] = useState("");
+  // const [budgetName, setBudgetName] = useState("");
   const [openingBalance, setOpeningBalance] = useState();
   // const [firstItem, setFirstItem] = useState(true);
   const [budgetData, setBudgetData] = useState({
     user_id: user.id,
-    budgetName: "",
+    name: "",
     date: currentDate,
     description: "",
     category: "",
@@ -287,9 +287,9 @@ const DailyBudget = () => {
     setCurrentDay(day);
   }, []);
 
-  const handleSetBudgetName = (e) => {
-    setCurrentBudgetName(e.target.value);
-  };
+  // const handleSetBudgetName = (e) => {
+  //   setCurrentBudgetName(e.target.value);
+  // };
 
   const handleChangeDays = (event) => {
     const { name, checked } = event.target;
@@ -384,7 +384,7 @@ const DailyBudget = () => {
   const handleInputChange = (date, field, value) => {
     setBudgetData((prevData) => ({
       ...prevData,
-      budgetName: budgetName,
+      name: currentBudgetName,
       [field]: value,
       date: date || new Date(),
       user_id: prevData.user_id || user.id,
@@ -394,7 +394,7 @@ const DailyBudget = () => {
   const resetVars = () => {
     setBudgetData({
       user_id: user.id,
-      budgetName: "",
+      name: "",
       date: currentDate,
       description: "",
       category: "",
@@ -511,9 +511,8 @@ const DailyBudget = () => {
         console.error("amount is not a valid string:", amount);
       }
       //the repeat options to go here
-
+      let repeatOptions = null;
       if (repeat) {
-        let repeatOptions = null;
         if (frequency === "daily") {
           repeatOptions = {
             frequency: frequency,
@@ -561,21 +560,31 @@ const DailyBudget = () => {
             yearlyRecurDate: yearlyRecurDate,
           };
         }
-
         const dataToSave = {
           user_id: budgetData.user_id || "default_user_id", // Replace 'default_user_id' with an appropriate default value
-          currentYear: currentYear,
-          startFinYr: startFinYr,
           name: budgetData.name || "",
-          type: budgetData.type || "",
-          category: budgetData.category || "",
-          transactiontype: budgetData.transactiontype || "expenses",
-          description: budgetData.description || "",
           date: budgetData.date || new Date(), // Set the default date to the current date
+          transactiontype: budgetData.transactiontype || "expenses",
           amount: budgetsAmount || 0, // Assuming amount should be a number; default to 0
+          category: budgetData.category || "",
+          description: budgetData.description || "",
           repeat_options: repeatOptions || {}, // Default to an empty object if not provided
           growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
           extras: budgetData.extras || "", // Default to an empty string if not provided
+
+          // user_id: budgetData.user_id || "default_user_id",
+          // currentYear: currentYear,
+          // startFinYr: startFinYr,
+          // name: budgetData.name || "",
+          // type: budgetData.type || "",
+          // category: budgetData.category || "",
+          // transactiontype: budgetData.transactiontype || "expenses",
+          // description: budgetData.description || "",
+          // date: budgetData.date || new Date(), // Set the default date to the current date
+          // amount: budgetsAmount || 0, // Assuming amount should be a number; default to 0
+          // repeat_options: repeatOptions || {}, // Default to an empty object if not provided
+          // growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
+          // extras: budgetData.extras || "", // Default to an empty string if not provided
         };
         handleRecurrence(dataToSave);
         handleCloseModal();
@@ -585,15 +594,15 @@ const DailyBudget = () => {
         const dataToSave = {
           user_id: budgetData.user_id || "default_user_id", // Replace 'default_user_id' with an appropriate default value
           name: budgetData.name || "",
-          type: budgetData.type || "",
-          category: budgetData.category || "",
-          transactiontype: budgetData.transactiontype || "expenses",
-          description: budgetData.description || "",
           date: budgetData.date || new Date(), // Set the default date to the current date
+          transactiontype: budgetData.transactiontype || "expenses",
           amount: budgetsAmount || 0, // Assuming amount should be a number; default to 0
-          repeat_options: budgetData.repeat_options || {}, // Default to an empty object if not provided
+          category: budgetData.category || "",
+          description: budgetData.description || "",
+          repeat_options: repeatOptions || {}, // Default to an empty object if not provided
           growth_options: budgetData.growth_options || {}, // Default to an empty object if not provided
           extras: budgetData.extras || "", // Default to an empty string if not provided
+          // type: budgetData.type || "",
         };
         // This should write data to the database
         if (editMode) {
@@ -605,19 +614,19 @@ const DailyBudget = () => {
           );
           setEditMode(false);
         } else {
-          await addBudget(
-            dataToSave.user_id,
-            dataToSave.name,
-            dataToSave.type,
-            dataToSave.category,
-            dataToSave.description,
-            dataToSave.date,
-            dataToSave.transactiontype,
-            dataToSave.amount,
-            dataToSave.repeat_options,
-            dataToSave.growth_options,
-            dataToSave.extras
-          );
+          await addBudgetTransaction(dataToSave);
+          // dataToSave.user_id,
+          // dataToSave.name,
+          // dataToSave.date,
+          // dataToSave.transactiontype,
+          // dataToSave.amount,
+          // dataToSave.category,
+          // dataToSave.description,
+          // dataToSave.repeat_options,
+          // dataToSave.growth_options,
+          // dataToSave.extras
+          // dataToSave.type,
+          // );
           // Update the state with the new budget
           setAllBudgets((prevBudgets) => [...prevBudgets, dataToSave]);
         }
@@ -989,7 +998,7 @@ const DailyBudget = () => {
     setEditId(item.id);
     setBudgetData({
       user_id: user.id,
-      budgetName: budgetName,
+      name: currentBudgetName,
       date: formatDate(item.date, "DD MMM YYYY"),
       description: item.description,
       transactiontype: item.transactiontype,

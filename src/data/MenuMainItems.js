@@ -23,6 +23,12 @@ export const menuMainItems = [
     cName: "main-menu-text",
   },
   {
+    title: "TEST",
+    url: "/testwindow",
+    icon: <BsGraphUpArrow size={24} />,
+    cName: "main-menu-text",
+  },
+  {
     title: "Transactions",
     url: "/transactions",
     icon: <GrTransaction size={24} />,

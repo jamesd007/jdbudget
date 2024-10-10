@@ -8,9 +8,10 @@ db.version(4).stores({
   budgettransactions:
     "++id,user_id,name,date,transactiontype,amount,category,description,repeat_options,growth_options,extras",
   //i need to decide - is transactiontype income and expenses or dr and cr?
-  transactiondetails: "++id,user_id,account_id,openingbalance",
+  transactiondetails:
+    "++id,[user_id+account_id],user_id,account_id,openingbalance",
   transactions:
-    "++id,user_id,account_id,date,day,type,description,category_code,category_description,transactiontype,amount,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
+    "++id,[date+description+amount],user_id,account_id,date,day,type,description,category_code,category_description,transactiontype,amount,balance,bank_code,group,subgroup,subsubgroup,timestamp,extras",
   headers: "++id,user_id,account_id,headers",
   category_descriptions:
     "++id,user_id,description,category_code,category_description",
@@ -52,33 +53,36 @@ async function getAllBudgets() {
   }
 }
 
-async function addBudget(
-  user_id,
-  name,
-  type,
-  category,
-  description,
-  date,
-  transactiontype,
-  amount,
-  repeat_options,
-  growth_options,
-  extras
-) {
-  return await db.budgettransactions.add({
-    user_id: user_id || "default_user_id", // Replace 'default_user_id' with an appropriate default value
-    name: name || "",
-    type: type || "",
-    category: category || "",
-    description: description || "",
-    date: date || new Date(), // Set the default date to the current date
-    transactiontype: transactiontype || "",
-    amount: amount || 0, // Assuming amount should be a number, default to 0
-    repeat_options: repeat_options || {}, // Default to an empty object if not provided
-    growth_options: growth_options || {}, // Default to an empty object if not provided
-    extras: extras || "", // Default to an empty string if not provided
-  });
+async function addBudgetTransaction(budgetData) {
+  return await db.budgettransactions.add(budgetData);
 }
+
+// async function addBudget(
+//   user_id,
+//   name,
+//   type,
+//   category,
+//   description,
+//   date,
+//   transactiontype,
+//   amount,
+//   repeat_options,
+//   growth_options,
+//   extras
+// ) {
+//   return await db.budgettransactions.add({
+//     user_id: user_id || "default_user_id", // Replace 'default_user_id' with an appropriate default value
+//     name: name || "",
+//     date: date || new Date(), // Set the default date to the current date
+//     transactiontype: transactiontype || "",
+//     amount: amount || 0, // Assuming amount should be a number, default to 0
+//     category: category || "",
+//     description: description || "",
+//     repeat_options: repeat_options || {}, // Default to an empty object if not provided
+//     growth_options: growth_options || {}, // Default to an empty object if not provided
+//     extras: extras || "", // Default to an empty string if not provided
+//   });
+// }
 
 async function addBudgets(budgets) {
   return await db.budgettransactions.bulkPut(budgets);
@@ -165,8 +169,9 @@ async function updateCategories(id, updatedData) {
 
 export {
   getAllBudgets,
-  addBudget,
   addBudgets,
+  addBudgetTransaction,
+  // addBudgets,
   // getBudgetsByType,
   deleteBudget,
   updateBudget,

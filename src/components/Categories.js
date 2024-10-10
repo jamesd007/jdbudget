@@ -292,14 +292,6 @@ const Categories = () => {
                   </td>
                 </tr>
                 {allCategories.map((item, index) => {
-                  console.log(
-                    "tedtestB allCategories.length=",
-                    allCategories.length,
-                    " index=",
-                    index,
-                    "  item=",
-                    item
-                  );
                   return (
                     <tr
                       key={item.id}

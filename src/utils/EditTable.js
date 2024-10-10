@@ -112,11 +112,14 @@ const EditTable = ({
     const getOpeningBalance = async () => {
       try {
         const accounts = await db.transactiondetails
-          .where({
-            user_id: user.id,
-            account_id: currentAccNumber.toString(),
-          })
+          .where("[user_id+account_id]")
+          .equals([user.id, currentAccNumber.toString()])
           .first();
+        // .where({
+        //   user_id: user.id,
+        //   account_id: currentAccNumber.toString(),
+        // })
+        // .first();
 
         if (accounts && accounts.openingbalance) {
           setStartBalance(parseFloat(accounts.openingbalance));
@@ -281,7 +284,7 @@ const EditTable = ({
               );
             }
           }}
-          value={transactions[index].category_description || ""}
+          value={transactions[index]?.category_description || ""}
         >
           {filteredCategories.map((catRec) => (
             <option key={catRec.id} value={catRec.category_description}>
@@ -359,18 +362,15 @@ const EditTable = ({
                         />
                       </td>
                       <td //date
-                        className={styles.date}
                       >
                         <input
                           className={styles.date}
                           type="date"
                           name="date"
                           value={
-                            //TODO tedtest if a line has incorrect format it may cause an item.date with invalid data
-                            //TODO tedtest need to check the format - that it is a date- as well as existence of item.date
-                            item.date
+                            item.date && !isNaN(new Date(item.date).getTime())
                               ? new Date(item.date).toISOString().split("T")[0] // Format as YYYY-MM-DD
-                              : ""
+                              : "" // Display nothing if the date is invalid or missing
                           }
                           onChange={(e) => handleDataChange(e, index, item.id)}
                           onFocus={(e) => handleFocus(e, index)}
