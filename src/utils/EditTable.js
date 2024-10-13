@@ -18,7 +18,7 @@ const EditTable = ({
   const [selectedRows, setselectedRows] = useState([]);
   const [allCategories, setAllCategories] = useState([]);
   const [openCatModal, setOpenCatModal] = useState(false);
-  const [startBalance, setStartBalance] = useState(null);
+  const [startBalance, setStartBalance] = useState(0);
   const [editableTransactions, setEditableTransactions] = useState([]);
   const [transactionsWithBalance, setTransactionsWithBalance] = useState([]);
   const [selectedCategory, setSelectedCategory] = useState("");
@@ -42,6 +42,9 @@ const EditTable = ({
     "December",
   ];
   const incexpcats = ["income", "expenses"];
+  const [tempStartBalance, setTempStartBalance] = useState(startBalance); // Temporary balance
+  const [originalStartBalance, setOriginalStartBalance] =
+    useState(startBalance); // For resetting
 
   const getLastAccountNumber = async () => {
     let rec;
@@ -115,12 +118,6 @@ const EditTable = ({
           .where("[user_id+account_id]")
           .equals([user.id, currentAccNumber.toString()])
           .first();
-        // .where({
-        //   user_id: user.id,
-        //   account_id: currentAccNumber.toString(),
-        // })
-        // .first();
-
         if (accounts && accounts.openingbalance) {
           setStartBalance(parseFloat(accounts.openingbalance));
         } else {
@@ -161,6 +158,57 @@ const EditTable = ({
   //   );
   // };
 
+  // Handle input changes
+  const handleOpenBalanceChange = (e) => {
+    const newBalance = parseFloat(e.target.value);
+    setTempStartBalance(newBalance);
+    console.log("New Balance =", newBalance);
+  };
+
+  // Store the original value when the input is focused
+  const handleOpenBalanceFocus = (e) => {
+    setOriginalStartBalance(tempStartBalance);
+  };
+
+  // Handle Escape key press
+  const handleKeyDown = (e) => {
+    if (e.key === "Escape") {
+      // Reset to the original balance only if Escape is pressed
+      setTempStartBalance(originalStartBalance);
+      console.log("Resetting to original balance =", originalStartBalance);
+    }
+    // Allow all other keys to behave normally
+  };
+
+  // Update balance in the database on blur
+  const changeOpeningBalance = async (newBalance) => {
+    if (user?.id && currentAccNumber && newBalance !== undefined) {
+      try {
+        // Dexie's update method generally takes (primaryKey, changes)
+        const updated = await db.transactiondetails.update(
+          user.id, // Primary key or unique identifier
+          {
+            account_id: currentAccNumber,
+            openingbalance: newBalance,
+          }
+        );
+
+        if (updated === 0) {
+          console.warn("No record found to update");
+        } else {
+          console.log("Balance updated successfully");
+          setStartBalance(newBalance);
+        }
+      } catch (error) {
+        console.error("ERROR updating opening balance:", error);
+      }
+    } else {
+      console.error(
+        "Invalid input: user.id, currentAccNumber, or newBalance is undefined or null"
+      );
+    }
+  };
+
   const handleDataChange = (e, index, id) => {
     const { name, value } = e.target;
     let newVal;
@@ -174,7 +222,6 @@ const EditTable = ({
     };
     setEditableTransactions(updatedTransactions);
     setTransactions(updatedTransactions); // Update parent state
-    // setTransactionsWithBalance(updatedTransactions);
   };
 
   const handleSelectAll = () => {
@@ -184,10 +231,6 @@ const EditTable = ({
       setselectedRows(transactions?.map((item) => item.id));
     }
   };
-
-  // const formatDate = (date, format) => {
-  //   return dayjs(date).format(format);
-  // };
 
   useEffect(() => {
     //getExistingCategories from dbase
@@ -341,9 +384,23 @@ const EditTable = ({
                 <td className={styles.dr}></td>
                 <td className={styles.cr}></td>
 
-                <td className={styles.balance}>
-                  {(startBalance || 0.0).toFixed(2)}
+                <td //opening balance
+                  className={styles.balance}
+                >
+                  <input
+                    className={styles.balance}
+                    type="number"
+                    name="startBalance"
+                    value={tempStartBalance}
+                    onChange={(e) => handleOpenBalanceChange(e)}
+                    onFocus={(e) => handleOpenBalanceFocus(e)} // Handle focusing the input
+                    onBlur={(e) => changeOpeningBalance(tempStartBalance)} // Update balance on blur
+                    onKeyDown={(e) => handleKeyDown(e)} // Handle Escape key press
+                  />
                 </td>
+                {/* <td className={styles.balance}>
+                  {(startBalance || 0.0).toFixed(2)}
+                </td> */}
               </tr>
               {startBalance !== null && editableTransactions.length > 0 ? (
                 transactionsWithBalance.map((item, index) => {

@@ -20,7 +20,6 @@ import CreateNewAccount from "../utils/CreateNewAccount";
 import { useNavigate } from "react-router-dom";
 
 const ImportDataNew = (props) => {
-  const [openBalance, setOpenBalance] = useState(0);
   const [transactionOpenBalance, setTransactionOpenBalance] = useState(0);
   const [closeBalance, setCloseBalance] = useState(0);
   const [fileContent, setFileContent] = useState(null);
@@ -86,6 +85,8 @@ const ImportDataNew = (props) => {
   ];
   const { user } = useContext(UserContext);
   const navigate = useNavigate();
+  const [headerArray, setHeaderArray] = useState(null);
+  const [selectedHeaders, setSelectedHeaders] = useState([]);
 
   const showInfoHeaders = () => {
     alert(
@@ -123,10 +124,11 @@ const ImportDataNew = (props) => {
           .toArray();
         if (accounts && accounts.length > 0) {
           let tmpAccNumber = await getLastAccountNumber();
-          if (tmpAccNumber) {
-            setCurrentAccNumber(tmpAccNumber);
-            setGetAccNumber(true);
-          } else {
+          if (!tmpAccNumber) {
+            // setCurrentAccNumber(tmpAccNumber);
+            // setGetAccNumber(true);
+            // }
+            // else {
             alert(
               "No account number found for this user, please enter or create account"
             );
@@ -322,7 +324,7 @@ const ImportDataNew = (props) => {
             fields[count].toLowerCase().includes("open balance") ||
             fields[count].toLowerCase().includes("opening balance")
           ) {
-            setOpenBalance((-1 * parseFloat(fields[count - 1]))?.toFixed(2));
+            // setOpenBalance((-1 * parseFloat(fields[count - 1]))?.toFixed(2));
             startBal = (-1 * parseFloat(fields[count - 1]))?.toFixed(2);
           }
           if (
@@ -400,38 +402,50 @@ const ImportDataNew = (props) => {
       }
     };
 
-    const checkAccountNumber = async () => {
-      //now we have currentAccNumber, do we need this? TODO tedtest
-      let found = await getAccountNumber();
-      if (!found) {
-        setGetAccNumber(true);
-      } else {
-      }
-    };
+    // const checkAccountNumber = async () => {
+    //   //now we have currentAccNumber, do we need this? TODO tedtest
+    //   let found = await getAccountNumber();
+    //   if (!found) {
+    //     setGetAccNumber(true);
+    //   } else {
+    //   }
+    // };
 
     if (!fileContent) {
       return;
     }
-    checkAccountNumber();
+    // checkAccountNumber();
   }, [lines]);
 
   //get Headers
   useEffect(() => {
+    let hdrArr = [];
     const getHeaders = async () => {
       let dbaseHeaders = [];
       //already have accountID, just look for accountID in the headers table and populate the headers
       //if cannot find accountID then ask user
       dbaseHeaders = await db.headers
         .where({ account_id: currentAccNumber })
-        .first();
+        .toArray();
+      // .first();
       if (dbaseHeaders) {
-        // Populate dbaseHeaders with the headers element from the existing header
-        const existHeaders = dbaseHeaders.headers;
-        // Populate editableHeaders with the names found in dbaseHeaders
-        setEditableHeaders(existHeaders);
-      } else {
-        window.alert(
-          `No headers for Account ID, ${currentAccNumber}, were found in the headers table. Please enter headers manually.`
+        hdrArr = dbaseHeaders.filter(
+          (item) => item.headers?.length === numberHeaders
+        );
+      }
+      if (hdrArr && hdrArr.length > 0) {
+        if (hdrArr.length === 1) setEditableHeaders(hdrArr[0].headers);
+        else {
+          setHeaderArray(hdrArr);
+          //tedtest this allows user to select a set of headers- need to insert dropdown here
+          window.alert(
+            `More than one set of headers for Account ID, ${currentAccNumber}, were found in the headers table. Please select the correct one from the headers database.`
+          );
+          setEditableHeaders(Array.from({ length: numberHeaders }, () => ""));
+        }
+      } else if (!hdrArr || hdrArr.length <= 0) {
+        alert(
+          "no headers found for this file type or number of columns, please select your headers for this data"
         );
         setEditableHeaders(Array.from({ length: numberHeaders }, () => ""));
       }
@@ -441,10 +455,15 @@ const ImportDataNew = (props) => {
     }
     if (lines && fileContent && numberHeaders > 0 && !accForDataModal)
       getHeaders();
-  }, [currentAccNumber, numberHeaders, lines, accForDataModal]);
+  }, [currentAccNumber, numberHeaders, lines, accForDataModal, numberHeaders]);
 
   const handleNewAccountId = (e) => {
     setNewAccountId(e.target.value);
+  };
+
+  const handleNewHeaders = (e) => {
+    const headersArray = e.target.value.split(",");
+    setEditableHeaders(headersArray);
   };
 
   const validAccId = (accId) => {
@@ -455,7 +474,6 @@ const ImportDataNew = (props) => {
   const handleSubmitAccNo = (accId) => {
     if (validAccId(accId)) {
       setCurrentAccNumber(accId);
-      // setGetAccNumber(false); //tdtest do we need this?
     } else {
       window.alert("Please enter valid account ID; cannot be empty string");
     }
@@ -561,6 +579,23 @@ const ImportDataNew = (props) => {
             </tr>
           </thead>
         </table>
+        {headerArray && headerArray.length > 0 && (
+          <div>
+            <label htmlFor="budget-select">Select headers:</label>
+            <select
+              id="headers-select"
+              value={selectedHeaders}
+              onChange={handleNewHeaders}
+            >
+              <option value="">--Please choose an option--</option>
+              {headerArray.map((name, index) => (
+                <option key={index} value={name.headers}>
+                  {name.headers}
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
     );
   };
@@ -791,69 +826,80 @@ const ImportDataNew = (props) => {
     const result = [];
     let dblVal = false;
     lines?.forEach((line) => {
-      const dataValues = line?.data?.split(",");
+      const dataValues = line?.data?.split(delimiter);
       const entry = {};
       dblVal = false;
       editableHeaders.forEach((header, index) => {
-        if (
-          header !== "ignore" &&
-          dataValues[index] !== "undefined" &&
-          dataValues[index] !== undefined
-        ) {
-          if (header !== "date") {
-            const originalValue = dataValues[index].trim();
-            const valueWithoutSpaces = originalValue.replace(/\s+/g, "");
-            // Attempt to parse the value as a float
-            const parsedValue = parseFloat(valueWithoutSpaces);
-            if (header === "amount_dr" || header === "amount_cr") {
-              if (!isNaN(parsedValue)) {
-                if (header === "amount_dr" && parsedValue !== 0) {
-                  let crValue = dataValues[index + 1]?.replace(/\s+/g, "");
-                  if (
-                    parseFloat(crValue?.trim()) &&
-                    !isNaN(parseFloat(crValue?.trim())) &&
-                    parseFloat(crValue?.trim()) !== 0
-                  ) {
-                    dblVal = true;
-                    let valAmount = 0;
-                    if (parseFloat(crValue?.trim()) > parsedValue) {
-                      valAmount = parseFloat(crValue?.trim()) - parsedValue;
-                      entry["amount"] = parseFloat((valAmount * 1).toFixed(2));
-                      entry["transactiontype"] = "income";
-                    } else {
-                      valAmount = parsedValue - parseFloat(crValue?.trim());
-                      entry["amount"] = parseFloat((valAmount * 1).toFixed(2));
+        if (dataValues[index])
+          if (
+            header !== "ignore" &&
+            dataValues[index] !== "undefined" &&
+            dataValues[index] !== undefined
+          ) {
+            if (header !== "date") {
+              const originalValue = dataValues[index].trim();
+              const valueWithoutSpaces = originalValue.replace(/\s+/g, "");
+              // Attempt to parse the value as a float
+              const parsedValue = parseFloat(valueWithoutSpaces);
+              if (header === "amount_dr" || header === "amount_cr") {
+                if (!isNaN(parsedValue)) {
+                  if (header === "amount_dr" && parsedValue !== 0) {
+                    let crValue = dataValues[index + 1]?.replace(/\s+/g, "");
+                    if (
+                      parseFloat(crValue?.trim()) &&
+                      !isNaN(parseFloat(crValue?.trim())) &&
+                      parseFloat(crValue?.trim()) !== 0
+                    ) {
+                      dblVal = true;
+                      let valAmount = 0;
+                      if (parseFloat(crValue?.trim()) > parsedValue) {
+                        valAmount = parseFloat(crValue?.trim()) - parsedValue;
+                        entry["amount"] = parseFloat(
+                          (valAmount * 1).toFixed(2)
+                        );
+                        entry["transactiontype"] = "income";
+                      } else {
+                        valAmount = parsedValue - parseFloat(crValue?.trim());
+                        entry["amount"] = parseFloat(
+                          (valAmount * 1).toFixed(2)
+                        );
+                        entry["transactiontype"] = "expenses";
+                      }
+                    } else if (header === "amount_dr") {
+                      entry["amount"] = parseFloat(
+                        (parsedValue * 1).toFixed(2)
+                      );
                       entry["transactiontype"] = "expenses";
                     }
-                  } else if (header === "amount_dr") {
-                    entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
-                    entry["transactiontype"] = "expenses";
+                  } else if (header === "amount_cr") {
+                    if (dblVal) {
+                      //do nothing?
+                    } else {
+                      entry["amount"] = parseFloat(
+                        (parsedValue * 1).toFixed(2)
+                      );
+                      entry["transactiontype"] = "income";
+                    }
                   }
-                } else if (header === "amount_cr") {
-                  if (dblVal) {
-                    //do nothing?
-                  } else {
-                    entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
-                    entry["transactiontype"] = "income";
-                  }
+                  // entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
+                  // if (header === "amount_dr")
+                  //   entry["transactiontype"] = "expenses";
+                  // if (header === "amount_cr") entry["transactiontype"] = "income";
                 }
-                // entry["amount"] = parseFloat((parsedValue * 1).toFixed(2));
-                // if (header === "amount_dr")
-                //   entry["transactiontype"] = "expenses";
-                // if (header === "amount_cr") entry["transactiontype"] = "income";
+              } else {
+                //Determine if the value is a valid number
+                if (!isNaN(parsedValue)) {
+                  // If it is a number, use the parsed value
+                  entry[header] = parsedValue;
+                } else {
+                  // If it's not a number, retain the original string
+                  entry[header] = originalValue;
+                }
               }
             } else {
-              //Determine if the value is a valid number
-              if (!isNaN(parsedValue)) {
-                // If it is a number, use the parsed value
-                entry[header] = parsedValue;
-              } else {
-                // If it's not a number, retain the original string
-                entry[header] = originalValue;
-              }
+              entry[header] = dataValues[index];
             }
-          } else entry[header] = dataValues[index];
-        }
+          }
       });
       if (isValidObject(entry)) result.push(entry);
     });
@@ -864,29 +910,34 @@ const ImportDataNew = (props) => {
     if (accountID) {
       try {
         // Fetch the existing header with the given account_id
-        const existingHeader = await db.headers
+        const existingHeaders = await db.headers
           .where({ account_id: accountID })
-          .first();
+          .toArray(); // Fetch all records with the given account_id
 
-        if (existingHeader) {
-          // Check if headers are the same
-          const headersAreSame =
-            JSON.stringify(existingHeader.headers) ===
-            JSON.stringify(editableHeaders);
-
+        // Now iterate over the existing records to check for matching headers
+        if (existingHeaders) {
+          const headersAreSame = existingHeaders.some(
+            (record) =>
+              JSON.stringify(record.headers) === JSON.stringify(editableHeaders)
+          );
           if (headersAreSame) {
             // Headers are the same, no need to add
             alert("Headers are already up-to-date.");
           } else {
-            // Headers are different, ask the user if they want to replace
+            // Headers are different, ask the user if they want to replace or append
+            // let replaceHdrs = window.confirm(
+            //   "Headers already exist for this account. Do you want to replace them?"
+            // );
             let replaceHdrs = window.confirm(
-              "Headers already exist for this account. Do you want to replace them?"
+              "Headers already exist for this account. Do you want to add these headers?"
             );
             if (replaceHdrs) {
-              await db.headers.update(existingHeader.id, {
+              let success = await db.headers.add({
+                account_id: accountID,
                 headers: editableHeaders,
               });
-              alert("Headers updated");
+              if (success) alert("Headers added");
+              else alert("Failed to add headers");
             } else {
               alert("Headers not updated");
             }
@@ -911,7 +962,7 @@ const ImportDataNew = (props) => {
   const reInitialise = () => {
     setSelectedFile(null);
     setFileContent(null);
-    setOpenBalance(0);
+    // setOpenBalance(0);
     setCloseBalance(0);
     setNewAccountId("");
     setNumberHeaders(0);
@@ -920,7 +971,9 @@ const ImportDataNew = (props) => {
     setConfirmations(false);
     setBalanceUnequal(false);
     setdbaseBalance(0);
+    setHeaderArray(null);
   };
+
   const handleSave = async () => {
     let proceed = true;
     if (selectedCheckboxes?.length > 0) {
@@ -933,19 +986,21 @@ const ImportDataNew = (props) => {
       //for each record in processeddata check if it hs category_description
       //if not, look in table category_description for a record with description===processedData's description
       //if found, add field and field details to processedData
-      processedData.map((item) => {
+      processedData.map((item, index) => {
         if (!item.category_description) {
-          db.category_descriptions
-            .where({ description: item.description })
-            .first()
-            .then((result) => {
-              if (result) {
-                item.category_description = result.category_description;
-              }
-            });
+          if (item.description) {
+            db.category_descriptions
+              .where({ description: item.description })
+              .first()
+              .then((result) => {
+                if (result) {
+                  item.category_description = result.category_description;
+                }
+              });
+          } else alert(`Record at index ${index} rejected, bad format`);
         }
       });
-      addNewTransactions(processedData)
+      await addNewTransactions(processedData)
         .then(() => {
           alert(
             "Transactions added successfully! " +
@@ -960,7 +1015,7 @@ const ImportDataNew = (props) => {
         .catch((error) => {
           alert("Error adding transactions:", error);
         });
-      addOrUpdateHeaders(currentAccNumber, editableHeaders);
+      await addOrUpdateHeaders(currentAccNumber, editableHeaders);
       if (window.history.length > 1) navigate(-1);
     } else alert("Invalid headers. Please select valid headers.");
   };
@@ -1185,44 +1240,6 @@ const ImportDataNew = (props) => {
 
       <FileUpload></FileUpload>
       {!currentAccNumber && alert("Please enter or create an account number")}
-      {/* {!getAccNumber && ( //put getaccnumber here but tie it to no current account number
-        <Modals
-          title="Account number"
-          onClose={() => setGetAccNumber(true)}
-          onClickOutside={() => setGetAccNumber(true)}
-          footer={
-            <div>
-              <button
-                className="UI-button-service"
-                type="button"
-                onClick={() => {
-                  handleSubmitAccNo(newAccountId);
-                }}
-              >
-                Submit
-              </button>
-              <button
-                className="UI-button-service"
-                type="button"
-                onClick={() => {
-                  setGetAccNumber(false);
-                }}
-              >
-                Cancel
-              </button>
-            </div>
-          }
-        >
-          <p>No account ID was found.</p>
-          <label className="modal-label-new">Enter account ID</label>
-          <input
-            value={newAccountId}
-            type="text"
-            onChange={handleNewAccountId}
-            onKeyDown={handleKeyDown}
-          ></input>
-        </Modals>
-      )} */}
       {fileContent && currentAccNumber && currentAccNumber.length > 0 && (
         <div className="indent-left-margin" style={{ width: "100%" }}>
           <b>File Content:</b>
