@@ -120,13 +120,16 @@ const EditTable = ({
           .first();
         if (accounts && accounts.openingbalance) {
           setStartBalance(parseFloat(accounts.openingbalance));
+          setTempStartBalance(parseFloat(accounts.openingbalance));
         } else {
           setStartBalance(0); // Or handle the case where openingBalance is not available
+          setTempStartBalance(0);
         }
         await db.users.update(user.id, { last_account: currentAccNumber });
       } catch (error) {
         console.log("Error getting opening balance", error);
         setStartBalance(0); // Handle error by setting a default value
+        setTempStartBalance(0);
       }
     };
     getOpeningBalance();
@@ -162,7 +165,6 @@ const EditTable = ({
   const handleOpenBalanceChange = (e) => {
     const newBalance = parseFloat(e.target.value);
     setTempStartBalance(newBalance);
-    console.log("New Balance =", newBalance);
   };
 
   // Store the original value when the input is focused
@@ -175,7 +177,6 @@ const EditTable = ({
     if (e.key === "Escape") {
       // Reset to the original balance only if Escape is pressed
       setTempStartBalance(originalStartBalance);
-      console.log("Resetting to original balance =", originalStartBalance);
     }
     // Allow all other keys to behave normally
   };
@@ -391,7 +392,7 @@ const EditTable = ({
                     className={styles.balance}
                     type="number"
                     name="startBalance"
-                    value={tempStartBalance}
+                    value={tempStartBalance.toFixed(2)}
                     onChange={(e) => handleOpenBalanceChange(e)}
                     onFocus={(e) => handleOpenBalanceFocus(e)} // Handle focusing the input
                     onBlur={(e) => changeOpeningBalance(tempStartBalance)} // Update balance on blur

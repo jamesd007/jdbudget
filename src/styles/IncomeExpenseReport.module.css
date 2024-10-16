@@ -1,9 +1,9 @@
 .tablecontainer {
   font-size: 0.8rem;
   overflow: auto;
-  max-height: 100%;
+  max-height: 90%;
   width: 90%;
-  height: 90vh;
+  height: 85vh;
   background-color: #fcf9f5;
   margin-left: 2.5%;
 }
@@ -51,8 +51,29 @@ thead tr {
   border-bottom: 2px solid darkslategray;
 }
 
-tbody tr:nth-child(odd) {
-  background-color: #e4e2df; /* Optional: add row striping for readability */
+/* tbody tr:nth-child(odd) {
+  background-color: #e4e2df;  Optional: add row striping for readability 
+} */
+
+/* Alternating row colors for regular rows */
+tbody tr.data_row:nth-child(odd) {
+  background-color: #e4e2df; /* Your shaded color for odd rows */
+}
+
+/* Ensure the "Expenses" row is shaded fully */
+.inc_exp_hdr_row {
+  background-color: #e4e2df; /* Manually apply the same shaded color */
+  font-size: 1.2rem;
+}
+
+.inc_exp_totals {
+  font-weight: bold;
+}
+
+/* Add other styling as needed */
+.inc_exp_row td {
+  font-weight: bold;
+  text-align: center;
 }
 
 .tablebody {
@@ -66,6 +87,11 @@ tbody tr:nth-child(odd) {
 
 .date {
   width: 5.8rem;
+  min-width: 5.8rem;
+}
+
+.month {
+  width: 3rem;
   min-width: 5.8rem;
 }
 
