@@ -6,6 +6,7 @@
   height: 85vh;
   background-color: #fcf9f5;
   margin-left: 2.5%;
+  padding: 0 0.4rem 0 0.5rem;
 }
 
 .table {
@@ -66,6 +67,10 @@ tbody tr.data_row:nth-child(odd) {
   font-size: 1.2rem;
 }
 
+.inc_exp_totals_row td {
+  padding: 0.25rem 0 0.25rem 0;
+}
+
 .inc_exp_totals {
   font-weight: bold;
 }
@@ -123,6 +128,12 @@ tbody tr.data_row:nth-child(odd) {
 
 .amount {
   text-align: right;
+}
+
+.total {
+  text-align: right;
+  width: 6rem;
+  margin-right: 1rem;
 }
 
 .reports_main_buttons {
