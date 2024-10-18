@@ -43,7 +43,6 @@ const Reports = () => {
     getDatabaseSize().then((size) => {
       console.log(`Database size: ${size} bytes`);
     });
-    console.log("tedtestR currentAccNumber=", currentAccNumber);
   }, []);
 
   const handleMenuClick = () => {
@@ -203,13 +202,11 @@ const Reports = () => {
     const fetchData = async () => {
       try {
         const transactions = await getAllTransactions(currentAccNumber);
-        console.log("tedtestRR transactions=", transactions);
         setAllTrans(transactions);
         const keys = new Set();
         transactions.forEach((item) => {
           Object.keys(item).forEach((key) => keys.add(key));
         });
-        console.log("tedtestRR keys=", keys);
         // Convert the set to an array and sort the keys as needed
         setHeadersInfo(Array.from(keys));
         setColWidths(createColWidthsArray(Array.from(keys)));

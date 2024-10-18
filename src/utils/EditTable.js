@@ -13,6 +13,8 @@ const EditTable = ({
   checkedTransactions,
   handleBlur,
   handleFocus,
+  transactionRefs,
+  selectedTransaction,
   ...props
 }) => {
   const [selectedRows, setselectedRows] = useState([]);
@@ -346,6 +348,19 @@ const EditTable = ({
     );
   };
 
+  useEffect(() => {
+    if (
+      selectedTransaction &&
+      transactionRefs?.current[selectedTransaction.id]
+    ) {
+      // Scroll to the selected transaction
+      transactionRefs.current[selectedTransaction.id].scrollIntoView({
+        behavior: "smooth",
+        block: "center",
+      });
+    }
+  }, [selectedTransaction, transactionRefs]);
+
   return (
     <div>
       {transactions && transactions?.length > 0 ? (
@@ -406,7 +421,10 @@ const EditTable = ({
               {startBalance !== null && editableTransactions.length > 0 ? (
                 transactionsWithBalance.map((item, index) => {
                   return (
-                    <tr key={item.id}>
+                    <tr
+                      key={item.id}
+                      ref={(el) => (transactionRefs.current[item.id] = el)}
+                    >
                       <td //checkbox
                         className={styles.editcheckbox}
                         style={{

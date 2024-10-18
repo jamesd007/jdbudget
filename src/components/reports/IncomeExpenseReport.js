@@ -7,6 +7,8 @@ import { format, addMonths, set } from "date-fns";
 import db from "../../store/Dexie";
 import { UserContext } from "../../contexts/UserContext";
 import { useDataContext } from "../../providers/DataProvider";
+import { FaSearch } from "react-icons/fa";
+import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 
 const IncomeExpenseReport = ({ transactions, categories }) => {
   const [startDate, setStartDate] = useState();
@@ -22,6 +24,7 @@ const IncomeExpenseReport = ({ transactions, categories }) => {
   const [balBf, setBalBf] = useState([]);
   const [balCf, setBalCf] = useState([]);
   const [startBalance, setStartBalance] = useState(0);
+  const iconSize = 20;
 
   const getPeriod = () => {
     // Check if a time period is stored in sessionStorage, 'reportDates' is an object {start:date1, end:date2}
@@ -154,9 +157,17 @@ const IncomeExpenseReport = ({ transactions, categories }) => {
     setEndDate(end);
   };
 
+  const handleSearch = () => {
+    console.log("tedtest handlesearch");
+  };
+
+  const handleGoto = () => {
+    console.log("tedtest handleGoto");
+  };
+
   return (
-    <div>
-      <div style={{ marginLeft: "2.5%" }}>
+    <div className={styles.incexp_details_container}>
+      <div>
         Report period:
         <DatePicker
           id="startDateId"
@@ -173,7 +184,28 @@ const IncomeExpenseReport = ({ transactions, categories }) => {
         />
         {/* <input value={`${startDate} - ${endDate}`} /> */}
       </div>
+      <div>Accounts:</div>
+      {/* <div>Search and Goto</div> */}
       <div className={styles.tablecontainer}>
+        <div
+          className={styles.incexp_button_grid}
+          style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
+        >
+          <button
+            className={styles.incexp_main_buttons}
+            onClick={() => handleSearch()}
+          >
+            <FaSearch size={iconSize * 0.8} />
+            Search
+          </button>
+          <button
+            className={styles.incexp_main_buttons}
+            onClick={() => handleGoto()}
+          >
+            <FaArrowUpRightFromSquare size={iconSize * 0.8} />
+            Goto
+          </button>
+        </div>
         {incomeTransactions && Object.keys(incomeTransactions).length > 0 ? (
           <table className={styles.table}>
             <thead>

@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useContext, useRef } from "react";
+import React, {
+  useState,
+  useEffect,
+  useContext,
+  useRef,
+  forwardRef,
+} from "react";
 import "../../styles/EditStyles.css";
 import "../../styles/MainStyles.css";
 import styles from "../../styles/Transaction.module.css";
@@ -13,29 +19,25 @@ import EditTable from "../../utils/EditTable";
 import ExportData from "../../components/ExportData";
 import { BiImport } from "react-icons/bi";
 import { BiExport } from "react-icons/bi";
-import { FaRegTrashAlt, FaRegSave } from "react-icons/fa";
+import { FaRegTrashAlt, FaSearch } from "react-icons/fa";
+import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 import Modals from "../../utils/Modals";
 import DropdownMenu from "../../utils/DropDownMenu";
 import { menuMainItems } from "../../data/MenuMainItems";
-import { FaFileImport } from "react-icons/fa";
-import { FaFileExport } from "react-icons/fa";
 import { FaRegEdit } from "react-icons/fa";
 import { MdAddCircleOutline } from "react-icons/md";
-import { MdAddCircle } from "react-icons/md";
 import { RiArrowGoBackFill } from "react-icons/ri";
 import { RiPlayReverseFill } from "react-icons/ri";
 import { BsThreeDotsVertical } from "react-icons/bs";
-import { BiSolidCategoryAlt } from "react-icons/bi";
 import { useNavigate } from "react-router-dom";
-import ImportDataNew from "../../components/ImportDataNew";
 import { UserContext } from "../../contexts/UserContext";
 import db from "../../store/Dexie";
 import { useDataContext } from "../../providers/DataProvider";
-import { set } from "date-fns";
 import CategoryModal from "../categories/CategoryModal";
 import { Link } from "react-router-dom";
-import CreateNewAccount from "../../utils/CreateNewAccount";
-// import SearchableDropdown from "../../components/categories/SearchableDropdown";
+import SearchUtil from "../../utils/SearchUtil";
+import DatePicker from "react-datepicker";
+import "react-datepicker/dist/react-datepicker.css";
 
 const TransactionsTest = () => {
   const [allTrans, setAllTrans] = useState([]);
@@ -56,16 +58,13 @@ const TransactionsTest = () => {
   const [importOption, setImportOption] = useState(false);
   const [editing, setEditing] = useState(true);
   const [exportOption, setExportOption] = useState(false);
-  // const [openTransactionsMenu, setOpenTransactionsMenu] = useState(false);
   const navigate = useNavigate();
-  // const [catEdit, setCatEdit] = useState(false);
   const [userAccounts, setUserAccounts] = useState([]);
   const [openModal, setOpenModal] = useState(false);
   const accNumberRef = useRef(null);
   const [newAccNumber, setNewAccNumber] = useState("");
   const [openingBalance, setOpeningBalance] = useState(0);
   const [addEntry, setAddEntry] = useState(false);
-  // const [transactionType, setTransactionType] = useState("expenses");
   const [openCatModal, setOpenCatModal] = useState(false);
   const [allCategories, setAllCategories] = useState([]);
   const [addTransEntry, setAddTransEntry] = useState({
@@ -79,6 +78,20 @@ const TransactionsTest = () => {
   });
   const transaction_details_container = useRef(null);
   const [detailsSpaceHgt, setDetailsSpaceHgt] = useState(0);
+  const [search, setSearch] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+  const transactionRefs = useRef({}); // Will store refs for each transaction
+  const [gotoDate, setGotoDate] = useState(new Date());
+  const [goto, setGoto] = useState(false);
+  const datePickerRef = useRef(null);
+
+  const CustomInput = forwardRef((props, ref) => (
+    <button
+      style={{ opacity: 0, position: "absolute" }}
+      onClick={props.onClick} // Make sure to pass the onClick handler
+      ref={ref}
+    />
+  ));
 
   useEffect(() => {
     if (transaction_details_container?.current) {
@@ -500,30 +513,53 @@ const TransactionsTest = () => {
     );
   };
 
-  // useEffect(() => {
-  //   let amount = 0;
-  // if (addTransEntry.transactionType === "expenses") {
-  //   if (addTransEntry.amount > 0)
-  //     amount = parseFloat((parseFloat(addTransEntry.amount) * -1).toFixed(2));
-  //   else amount = parseFloat(parseFloat(addTransEntry.amount).toFixed(2));
-  // } else if (addTransEntry.transactionType === "income") {
-  //   if (addTransEntry.amount > 0)
-  //     amount = parseFloat(parseFloat(addTransEntry.amount).toFixed(2));
-  //   else
-  //     amount = parseFloat((parseFloat(addTransEntry.amount) * -1).toFixed(2));
-  // } else amount = addTransEntry.amount;
-  //   setAddTransEntry((prevData) => ({
-  //     ...prevData,
-  //     account_id: currentAccNumber,
-  //     amount: amount,
-  //     // date: date || new Date(),
-  //     user_id: prevData.user_id || user.id,
-  //   }));
-  // }, [addTransEntry.transactiontype, addTransEntry.amount]);
+  const handleSearch = () => {
+    setSearch(true);
+  };
 
-  // const handleIncExp = (event) => {
-  //   setTransactionType(event.target.value);
-  // };
+  const handleTransactionSelect = (item) => {
+    setSelectedTransaction(item); // Set the selected transaction after search
+    setSearch(false); // Close the modal
+  };
+
+  const scrollToDate = (date) => {
+    // Convert the selected date (from date picker) to a Date object and reset the time to midnight
+    const gotoDateParsed = new Date(date);
+    gotoDateParsed.setHours(0, 0, 0, 0); // Normalize to midnight (ignore time)
+    if (isNaN(gotoDateParsed.getTime())) {
+      console.error("Invalid date provided:", date);
+      return; // Exit if the date is invalid
+    }
+    // Find the first transaction with a date equal to or greater than gotoDate, ignoring the time
+    const selectedValue =
+      allTrans.find((item) => {
+        // Convert item.date (string) to a Date object and normalize to midnight
+        const itemDate = new Date(item.date);
+        itemDate.setHours(0, 0, 0, 0); // Normalize to midnight (ignore time)
+        if (isNaN(itemDate.getTime())) {
+          console.warn("Invalid date format for item:", item.date);
+          return false; // Skip this item if the date is invalid
+        }
+        // Compare the dates (ignoring the time part)
+        const isMatch = itemDate >= gotoDateParsed;
+        return isMatch;
+      }) || allTrans[allTrans.length - 1]; // Fallback to the last item
+    // Set the selected transaction to the found item (or the last one)
+    setSelectedTransaction(selectedValue);
+    // Close the date picker or reset the state as needed
+    setGoto(false);
+  };
+
+  const handleGoto = () => {
+    datePickerRef?.current?.setFocus();
+    setGoto(true);
+  };
+
+  useEffect(() => {
+    if (goto && datePickerRef.current) {
+      datePickerRef.current.setFocus();
+    }
+  }, [goto]);
 
   return (
     <div>
@@ -541,17 +577,6 @@ const TransactionsTest = () => {
               mainscreen={true}
             ></DropdownMenu>
           )}
-          {/* {openTransactionsMenu && (
-            <DropdownMenu
-              type="items"
-              secType="links"
-              roles={"any"}
-              menuItems={menuItems}
-              secMenuItem={menuMainItems}
-              onClose={() => setOpenTransactionsMenu(false)}
-              mainscreen={true}
-            />
-          )} */}
         </div>
       </div>
       <div
@@ -603,10 +628,7 @@ const TransactionsTest = () => {
         <div>
           {editing && (
             <div className={styles.displaycontainer}>
-              <div
-                className={styles.transaction_button_grid}
-                style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
-              >
+              <div className={styles.transaction_button_grid}>
                 <button
                   className={styles.transaction_main_buttons}
                   onClick={() => setAddEntry(true)}
@@ -638,17 +660,26 @@ const TransactionsTest = () => {
                     Import
                   </span>
                 )}
-
-                {/* <Link to="/import" className={styles.transaction_main_buttons}>
-                  <BiImport size={24} />
-                  Import
-                </Link> */}
                 <button
                   className={styles.transaction_main_buttons}
                   onClick={() => handleExport()}
                 >
                   <BiExport size={24} />
                   Export
+                </button>
+                <button
+                  className={styles.transaction_main_buttons}
+                  onClick={() => handleSearch()}
+                >
+                  <FaSearch size={iconSize * 0.8} />
+                  Search
+                </button>
+                <button
+                  className={styles.transaction_main_buttons}
+                  onClick={() => handleGoto()}
+                >
+                  <FaArrowUpRightFromSquare size={iconSize * 0.8} />
+                  Goto
                 </button>
               </div>
               <div className={styles.tabledisplaycontainer}>
@@ -659,11 +690,42 @@ const TransactionsTest = () => {
                     checkedTransactions={setCheckedTransactions}
                     handleBlur={handleBlur}
                     handleFocus={handleFocus}
+                    transactionRefs={transactionRefs}
+                    selectedTransaction={selectedTransaction} // Pass selected transaction
                   />
                 ) : (
                   <p style={{ marginLeft: "1rem" }}>No data found</p>
                 )}
               </div>
+            </div>
+          )}
+          {search && (
+            <SearchUtil
+              transactions={allTrans}
+              transactionRefs={transactionRefs}
+              onSelect={handleTransactionSelect} // Pass back selected transaction
+              onClose={() => setSearch(false)}
+            />
+          )}
+          {goto && (
+            <div
+              style={{
+                position: "absolute",
+                top: "3rem",
+                right: "10rem",
+              }}
+            >
+              <DatePicker
+                ref={datePickerRef} // Reference to DatePicker
+                selected={gotoDate}
+                placeholderText="Select a date"
+                dateFormat="dd/MM/yyyy"
+                onChange={scrollToDate}
+                showMonthDropdown
+                customInput={
+                  <button style={{ opacity: 0, position: "absolute" }} />
+                } // Hide input but make it functional
+              />
             </div>
           )}
           {exportOption && (

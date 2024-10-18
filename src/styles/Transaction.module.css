@@ -42,9 +42,9 @@
 .transaction_button_grid {
   position: sticky;
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(1rem, 5rem), 1fr));
   align-items: center;
-  gap: 5px;
+  gap: 0.25rem;
   right: 0%;
   bottom: 4%;
 }

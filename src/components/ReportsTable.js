@@ -6,10 +6,7 @@ import styles from "../styles/Reports.module.css";
 import dayjs from "dayjs";
 
 const ReportsTable = ({ allTrans, colWidthArr, headers, ...props }) => {
-  // console.log("tedtestRS reports colWidthArr=", colWidthArr);
-  console.log("tedtestRS reports headers=", headers);
-  console.log("tedtestRS reports props=", props);
-  const [selectedRows, setselectedRows] = useState([]);
+  //tedtest TODO colWidthArr not used
   const [sortedTrans, setSortedTrans] = useState([]);
   const [sortConfig, setSortConfig] = useState({
     key: "date",
@@ -20,24 +17,10 @@ const ReportsTable = ({ allTrans, colWidthArr, headers, ...props }) => {
     setSortedTrans(allTrans);
   }, [allTrans]);
 
-  useEffect(() => {
-    console.log("tedtestRZ sortConfig=", sortConfig);
-  }, [sortConfig]);
-
   const sortedTransactions = useMemo(() => {
-    console.log("tedtestS sortedTransactions started sortConfig=", sortConfig);
     const sortedData = [...sortedTrans];
-    console.log("tedtestS sortedData=", sortedData);
     if (sortConfig.key) {
       let index = sortConfig.key.toLowerCase();
-      console.log(
-        "tedtestSORT1 Sorting by",
-        sortConfig.key,
-        "   index=",
-        index,
-        " dir=",
-        sortConfig.direction
-      );
       // Sorting by date
       if (index === "date") {
         sortedData.sort((a, b) => {
@@ -116,69 +99,8 @@ const ReportsTable = ({ allTrans, colWidthArr, headers, ...props }) => {
         });
       }
     }
-
-    console.log("tedtestS sortedData after sort=", sortedData);
     return sortedData;
   }, [sortedTrans, sortConfig]);
-
-  // const sortedTransactions = useMemo(() => {
-  //   console.log("tedtestS sortedTransactions started sortConfig=", sortConfig);
-  //   const sortedData = [...sortedTrans];
-  //   console.log("tedtestS sortedData=", sortedData);
-  //   if (sortConfig.key) {
-  //     let index = sortConfig.key.toLowerCase();
-  //     console.log(
-  //       "tedtestSORT1 Sorting by",
-  //       sortConfig.key,
-  //       "   index=",
-  //       index,
-  //       " dir=",
-  //       sortConfig.direction
-  //     );
-  //     if (index === "date") {
-  //       sortedData.sort((a, b) => {
-  //         // sortedData.sort((a, b) => {
-  //         const dateA = new Date(a[index]);
-  //         const dateB = new Date(b[index]);
-  //         return sortConfig.direction === "ascending"
-  //           ? dateA - dateB
-  //           : dateB - dateA;
-  //       });
-  //     } else {
-  //       sortedData.sort((a, b) => {
-  //         if (index === "amount") {
-  //           sortedData.sort((a, b) => {
-  //             const valueA = parseFloat(a[sortConfig.key]) || 0;
-  //             const valueB = parseFloat(b[sortConfig.key]) || 0;
-  //             return sortConfig.direction === "ascending"
-  //               ? valueA - valueB
-  //               : valueB - valueA;
-  //           });
-  //         } else if (typeof a[index] === "string") {
-  //           console.log(
-  //             "tedtestSORT2 Comparing:",
-  //             a[index].toLocaleLowerCase(),
-  //             b[index].toLocaleLowerCase()
-  //           );
-  //           sortedData.sort((a, b) => {
-  //             const valueA = a[index].toLowerCase();
-  //             const valueB = b[index].toLowerCase();
-  //             return sortConfig.direction === "ascending"
-  //               ? valueA.localeCompare(valueB)
-  //               : valueB.localeCompare(valueA);
-  //           });
-  //         } else if (a[index] < b[index]) {
-  //           return sortConfig.direction === "ascending" ? -1 : 1;
-  //         }
-  //         if (a[index] > b[index]) {
-  //           return sortConfig.direction === "ascending" ? 1 : -1;
-  //         }
-  //         return 0;
-  //       });
-  //     }
-  //   }
-  //   return sortedData;
-  // }, [sortedTrans, sortConfig]);
 
   const requestSort = (key) => {
     let direction = "ascending";
@@ -188,50 +110,12 @@ const ReportsTable = ({ allTrans, colWidthArr, headers, ...props }) => {
     setSortConfig({ key, direction });
   };
 
-  // const sortedTrans = React.useMemo(() => {
-  //   if (!sortConfig.key) return allTrans;
-
-  //   const sortedArray = [...allTrans].sort((a, b) => {
-  //     if (a[sortConfig.key] < b[sortConfig.key]) {
-  //       return sortConfig.direction === "ascending" ? -1 : 1;
-  //     }
-  //     if (a[sortConfig.key] > b[sortConfig.key]) {
-  //       return sortConfig.direction === "ascending" ? 1 : -1;
-  //     }
-  //     return 0;
-  //   });
-
-  //   return sortedArray;
-  // }, [allTrans, sortConfig]);
-
-  // const handleSort = (key) => {
-  //   let direction = "ascending";
-  //   if (sortConfig.key === key && sortConfig.direction === "ascending") {
-  //     direction = "descending";
-  //   }
-  //   setSortConfig({ key, direction });
-  // };
-
-  // const getArrow = (key) => {
-  //   if (sortConfig.key === key) {
-  //     return sortConfig.direction === "ascending" ? (
-  //       <BiSolidUpArrow />
-  //     ) : (
-  //       <BiSolidDownArrow />
-  //     );
-  //   }
-  //   return "";
-  // };
-
   const getDayOfWeek = (date) => {
     return dayjs(date).format("ddd");
   };
 
   return (
-    <div
-      //  className="reports-table-content"
-      className={styles.tablecontainer}
-    >
+    <div className={styles.tablecontainer}>
       {sortedTransactions && sortedTrans.length > 0 ? (
         <table className={styles.table}>
           <thead>

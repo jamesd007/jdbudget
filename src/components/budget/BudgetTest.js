@@ -10,6 +10,8 @@ import Modals from "../../utils/Modals";
 import { BiImport } from "react-icons/bi";
 import { BiExport } from "react-icons/bi";
 import { Link } from "react-router-dom";
+import { FaSearch } from "react-icons/fa";
+import { FaArrowUpRightFromSquare } from "react-icons/fa6";
 
 const BudgetTest = () => {
   const { currentBudgetName, setCurrentBudgetName } = useDataContext();
@@ -196,6 +198,14 @@ const BudgetTest = () => {
     setOpenModal(false);
   };
 
+  const handleSearch = () => {
+    console.log("tedtest handlesearch");
+  };
+
+  const handleGoto = () => {
+    console.log("tedtest handleGoto");
+  };
+
   return (
     <div className="work-container">
       <span style={{ fontSize: "1.25rem", marginLeft: "1rem" }}>
@@ -289,7 +299,7 @@ const BudgetTest = () => {
       >
         <div
           className={styles.budget_button_grid}
-          style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
+          // style={{ gridTemplateColumns: "repeat(4, 7rem)" }}
         >
           {/* <button
             className={styles.budget_main_buttons}
@@ -320,6 +330,20 @@ const BudgetTest = () => {
             <BiExport size={24} />
             {/* <FaFileExport size={20} /> */}
             Export
+          </button>
+          <button
+            className={styles.budget_main_buttons}
+            onClick={() => handleSearch()}
+          >
+            <FaSearch size={iconSize * 0.8} />
+            Search
+          </button>
+          <button
+            className={styles.budget_main_buttons}
+            onClick={() => handleGoto()}
+          >
+            <FaArrowUpRightFromSquare size={iconSize * 0.8} />
+            Goto
           </button>
         </div>
         {startMonth && displayYear ? (

@@ -107,7 +107,7 @@ tbody tr:nth-child(odd) {
 .budget_button_grid {
   /* position: relative; */
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(1rem, 7rem), 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(1rem, 5rem), 1fr));
   align-items: center;
   gap: 5px;
   right: 0%;

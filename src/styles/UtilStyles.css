@@ -1,0 +1,40 @@
+.search_results_container {
+  max-height: 40vh; /* Adjust based on your needs */
+  overflow-y: auto; /* Ensure the container scrolls vertically */
+}
+
+.search_results_list {
+  display: flex;
+  flex-direction: row;
+  gap: 1rem;
+  font-size: 0.8rem;
+  cursor: pointer;
+  overflow-y: auto;
+}
+
+.search_results_date {
+  width: 4rem;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
+.search_results_description {
+  width: 15rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.search_results_category_description {
+  width: 5rem;
+  overflow: hidden;
+  white-space: nowrap;
+  text-align: left;
+}
+
+.search_results_amount {
+  width: 4rem;
+  text-align: right;
+  overflow: hidden;
+  white-space: nowrap;
+}
